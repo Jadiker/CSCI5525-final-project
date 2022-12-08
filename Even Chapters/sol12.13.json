@@ -1,0 +1,369 @@
+
+[  
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### a.\n",
+    "_Exercise: Display the epoch, iteration, mean training loss, and mean accuracy over each epoch (updated at each iteration), as well as the validation loss and accuracy at the end of each epoch._"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 269,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "(X_train_full, y_train_full), (X_test, y_test) = keras.datasets.fashion_mnist.load_data()\n",
+    "X_train_full = X_train_full.astype(np.float32) / 255.\n",
+    "X_valid, X_train = X_train_full[:5000], X_train_full[5000:]\n",
+    "y_valid, y_train = y_train_full[:5000], y_train_full[5000:]\n",
+    "X_test = X_test.astype(np.float32) / 255."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 270,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "keras.backend.clear_session()\n",
+    "np.random.seed(42)\n",
+    "tf.random.set_seed(42)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 271,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model = keras.models.Sequential([\n",
+    "    keras.layers.Flatten(input_shape=[28, 28]),\n",
+    "    keras.layers.Dense(100, activation=\"relu\"),\n",
+    "    keras.layers.Dense(10, activation=\"softmax\"),\n",
+    "])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 272,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "n_epochs = 5\n",
+    "batch_size = 32\n",
+    "n_steps = len(X_train) // batch_size\n",
+    "optimizer = keras.optimizers.Nadam(learning_rate=0.01)\n",
+    "loss_fn = keras.losses.sparse_categorical_crossentropy\n",
+    "mean_loss = keras.metrics.Mean()\n",
+    "metrics = [keras.metrics.SparseCategoricalAccuracy()]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 273,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "901e5649b50840538874aed5bab0d4ed",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "All epochs:   0%|          | 0/5 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "2f29690a5ade4bd8a6d164d106ba2d31",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Epoch 1/5:   0%|          | 0/1718 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "c2ea6579132c48c087c7f59e6309387a",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Epoch 2/5:   0%|          | 0/1718 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "94fa1527062c4cf7a277a548bbddc855",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Epoch 3/5:   0%|          | 0/1718 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "dbcfc9a0c4b64151a18cf27080872dd3",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Epoch 4/5:   0%|          | 0/1718 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "fc3831d9b98e488c837ba9644bf4b94a",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Epoch 5/5:   0%|          | 0/1718 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "with trange(1, n_epochs + 1, desc=\"All epochs\") as epochs:\n",
+    "    for epoch in epochs:\n",
+    "        with trange(1, n_steps + 1, desc=\"Epoch {}/{}\".format(epoch, n_epochs)) as steps:\n",
+    "            for step in steps:\n",
+    "                X_batch, y_batch = random_batch(X_train, y_train)\n",
+    "                with tf.GradientTape() as tape:\n",
+    "                    y_pred = model(X_batch)\n",
+    "                    main_loss = tf.reduce_mean(loss_fn(y_batch, y_pred))\n",
+    "                    loss = tf.add_n([main_loss] + model.losses)\n",
+    "                gradients = tape.gradient(loss, model.trainable_variables)\n",
+    "                optimizer.apply_gradients(zip(gradients, model.trainable_variables))\n",
+    "                for variable in model.variables:\n",
+    "                    if variable.constraint is not None:\n",
+    "                        variable.assign(variable.constraint(variable))                    \n",
+    "                status = OrderedDict()\n",
+    "                mean_loss(loss)\n",
+    "                status[\"loss\"] = mean_loss.result().numpy()\n",
+    "                for metric in metrics:\n",
+    "                    metric(y_batch, y_pred)\n",
+    "                    status[metric.name] = metric.result().numpy()\n",
+    "                steps.set_postfix(status)\n",
+    "            y_pred = model(X_valid)\n",
+    "            status[\"val_loss\"] = np.mean(loss_fn(y_valid, y_pred))\n",
+    "            status[\"val_accuracy\"] = np.mean(keras.metrics.sparse_categorical_accuracy(\n",
+    "                tf.constant(y_valid, dtype=np.float32), y_pred))\n",
+    "            steps.set_postfix(status)\n",
+    "        for metric in [mean_loss] + metrics:\n",
+    "            metric.reset_states()\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### b.\n",
+    "_Exercise: Try using a different optimizer with a different learning rate for the upper layers and the lower layers._"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 274,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "keras.backend.clear_session()\n",
+    "np.random.seed(42)\n",
+    "tf.random.set_seed(42)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 275,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "lower_layers = keras.models.Sequential([\n",
+    "    keras.layers.Flatten(input_shape=[28, 28]),\n",
+    "    keras.layers.Dense(100, activation=\"relu\"),\n",
+    "])\n",
+    "upper_layers = keras.models.Sequential([\n",
+    "    keras.layers.Dense(10, activation=\"softmax\"),\n",
+    "])\n",
+    "model = keras.models.Sequential([\n",
+    "    lower_layers, upper_layers\n",
+    "])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 276,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "lower_optimizer = keras.optimizers.SGD(learning_rate=1e-4)\n",
+    "upper_optimizer = keras.optimizers.Nadam(learning_rate=1e-3)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 277,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "n_epochs = 5\n",
+    "batch_size = 32\n",
+    "n_steps = len(X_train) // batch_size\n",
+    "loss_fn = keras.losses.sparse_categorical_crossentropy\n",
+    "mean_loss = keras.metrics.Mean()\n",
+    "metrics = [keras.metrics.SparseCategoricalAccuracy()]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 278,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "7e81cf85cf7548748ec760afcbd71aa2",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "All epochs:   0%|          | 0/5 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "475109b927d044a7bba030f234c67838",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Epoch 1/5:   0%|          | 0/1718 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "af0a22afae4f47359f8fdfbac96e38bb",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Epoch 2/5:   0%|          | 0/1718 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "5519ec96e42f4281987a84a5434a0734",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Epoch 3/5:   0%|          | 0/1718 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "ed04f31b3a7d4b3b9a0cd63b644e2ed5",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Epoch 4/5:   0%|          | 0/1718 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "bfc4b1b4d40f4003ab8a3140a68ec883",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "Epoch 5/5:   0%|          | 0/1718 [00:00<?, ?it/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "with trange(1, n_epochs + 1, desc=\"All epochs\") as epochs:\n",
+    "    for epoch in epochs:\n",
+    "        with trange(1, n_steps + 1, desc=\"Epoch {}/{}\".format(epoch, n_epochs)) as steps:\n",
+    "            for step in steps:\n",
+    "                X_batch, y_batch = random_batch(X_train, y_train)\n",
+    "                with tf.GradientTape(persistent=True) as tape:\n",
+    "                    y_pred = model(X_batch)\n",
+    "                    main_loss = tf.reduce_mean(loss_fn(y_batch, y_pred))\n",
+    "                    loss = tf.add_n([main_loss] + model.losses)\n",
+    "                for layers, optimizer in ((lower_layers, lower_optimizer),\n",
+    "                                          (upper_layers, upper_optimizer)):\n",
+    "                    gradients = tape.gradient(loss, layers.trainable_variables)\n",
+    "                    optimizer.apply_gradients(zip(gradients, layers.trainable_variables))\n",
+    "                del tape\n",
+    "                for variable in model.variables:\n",
+    "                    if variable.constraint is not None:\n",
+    "                        variable.assign(variable.constraint(variable))                    \n",
+    "                status = OrderedDict()\n",
+    "                mean_loss(loss)\n",
+    "                status[\"loss\"] = mean_loss.result().numpy()\n",
+    "                for metric in metrics:\n",
+    "                    metric(y_batch, y_pred)\n",
+    "                    status[metric.name] = metric.result().numpy()\n",
+    "                steps.set_postfix(status)\n",
+    "            y_pred = model(X_valid)\n",
+    "            status[\"val_loss\"] = np.mean(loss_fn(y_valid, y_pred))\n",
+    "            status[\"val_accuracy\"] = np.mean(keras.metrics.sparse_categorical_accuracy(\n",
+    "                tf.constant(y_valid, dtype=np.float32), y_pred))\n",
+    "            steps.set_postfix(status)\n",
+    "        for metric in [mean_loss] + metrics:\n",
+    "            metric.reset_states()"
+   ]
+  }
+]  

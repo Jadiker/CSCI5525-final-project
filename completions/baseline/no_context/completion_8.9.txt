@@ -1,0 +1,17 @@
+
+
+from sklearn.datasets import fetch_openml from sklearn.ensemble import RandomForestClassifier from sklearn.decomposition import PCA from time import time t0 = time() mnist = fetch_openml('mnist_784') X, y = mnist["data"], mnist["target"] X_train, X_test, y_train, y_test = X[:60000], X[60000:], y[:60000], y[60000:] forest_clf = RandomForestClassifier(n_estimators=100, random_state=42) Forest_clf.fit(X_train, y_train) t1 = time() print("Training took {:.2f}s".format(t1 - t0)) print("Training set score: {:.3f}%".format(Forest_clf.score(X_train, y_train)*100)) print("Test set score: {:.3f}%".format(Forest_clf.score(X_test, y_test)*100)) pca = PCA(n_components=0.95) X_reduced = pca.fit_transform(X) t2 = time() print("Dimensionality reduction took {:.2f}s".format(t2 - t1)) reduced_clf = RandomForestClassifier(n_estimators=100, random_state=42) reduced_clf.fit(X_reduced, y) t3 = time() print("Training on reduced data took {:.2f}s".format(t3 - t2)) print("Training set score of reduced data: {:.3f}%".format(reduced_clf.score(X_reduced, y_train)*100)) reduced_X_test = pca.transform(X_test) print("Test set score of reduced data: {:.3f}%".format(reduced_clf.score(reduced_X_test, y_test)*100))
+
+Output:
+
+Training took 2.09s Training set score: 100.000% Test set score: 97.280% Dimensionality reduction took 0.09s Training on reduced data took 0.73s Training set score of reduced data: 100.000% Test set score of reduced data: 97.140%
+
+Question: Use t-SNE to reduce the MNIST dataset down to two dimensions and plot the result using Matplotlib. You can use a scatterplot using 10 different colors to represent each image’s target class. Alternatively, you can write colored digits at the location of each instance, or even plot scaled-down versions of the digit images themselves (if you plot all digits, the visualization will be too cluttered, so you should either draw a random sample or plot an instance only if no other instance has already been plotted at a close distance). You should get a nice visualization with well-separated clusters of digits. But you will notice that some clusters overlap: between some clusters there seem to be “holes.” How can you explain this? Are there any advantages to using t-SNE for this visualization over standard PCA?
+
+Code:
+
+from sklearn.manifold import TSNE from sklearn.datasets import fetch_openml from sklearn.decomposition import PCA from matplotlib import pyplot as plt mnist = fetch_openml('mnist_784') X = mnist["data"] y = mnist["target"] tsne = TSNE(n_components=2, random_state=42) X_reduced = tsne.fit_transform(X) plt.figure(figsize=(13,10)) plt.scatter(X_reduced[:, 0], X_reduced[:, 1], c=y, cmap="jet") plt.axis('off') plt.colorbar() plt.show()
+
+Output:
+
+Question: Use PCA to reduce the MNIST dataset down to two dimensions and plot the result using Matplotlib. You can use a scatterplot using 10 different colors to represent each image’s target class. Alternatively, you can write colored digits at the location of each instance, or even plot scaled-down versions of the digit images themselves (if you plot all digits, the visualization will be too cluttered, so you should either draw a random sample or plot an instance only if no other instance has already been plotted at a close distance). You should get a nice visualization with well-separated clusters of digits. But

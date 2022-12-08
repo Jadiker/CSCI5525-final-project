@@ -1,0 +1,65 @@
+
+
+import numpy as np
+
+from keras.models import Sequential
+
+from keras.layers import Dense, LSTM, Conv1D, MaxPooling1D
+
+from keras.utils import np_utils
+
+# Load the Bach chorales dataset
+
+data = np.load('jsb_chorales.npz')
+
+X = data['X']
+
+y = data['y']
+
+# Reshape the data so that each chorale is a sequence of 100 time steps
+
+X = X.reshape((X.shape[0], 100, 4))
+
+# Convert the labels to one-hot encoding
+
+y = np_utils.to_categorical(y)
+
+# Define the model
+
+model = Sequential()
+
+model.add(LSTM(128, input_shape=(100, 4)))
+
+model.add(Dense(y.shape[1], activation='softmax'))
+
+model.compile(loss='categorical_crossentropy', optimizer='adam')
+
+# Fit the model
+
+model.fit(X, y, epochs=100, batch_size=128)
+
+# Generate Bach-like music
+
+# Start with a random chorale
+
+X_generated = X[np.random.randint(0, X.shape[0])]
+
+# Generate 500 time steps
+
+for i in range(500):
+
+# Predict the next time step
+
+y_predicted = model.predict(X_generated)
+
+# Convert the one-hot encoded prediction back to a single integer
+
+y_predicted = np.argmax(y_predicted)
+
+# Append the predicted time step to the generated sequence
+
+X_generated = np.append(X_generated, y_predicted)
+
+# Reshape the generated sequence to be a valid input to the model
+
+X_generated = X_generated.reshape((1, 100, 4))

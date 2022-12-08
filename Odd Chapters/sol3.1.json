@@ -1,0 +1,221 @@
+[
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "## 1. An MNIST Classifier With Over 97% Accuracy"
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "**Warning**: the next cell may take close to 16 hours to run, or more depending on your hardware."
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 88,
+     "metadata": {},
+     "outputs": [
+      {
+       "name": "stdout",
+       "output_type": "stream",
+       "text": [
+        "Fitting 5 folds for each of 6 candidates, totalling 30 fits\n",
+        "[CV] n_neighbors=3, weights=uniform ..................................\n"
+       ]
+      },
+      {
+       "name": "stderr",
+       "output_type": "stream",
+       "text": [
+        "[Parallel(n_jobs=1)]: Using backend SequentialBackend with 1 concurrent workers.\n"
+       ]
+      },
+      {
+       "name": "stdout",
+       "output_type": "stream",
+       "text": [
+        "[CV] ..... n_neighbors=3, weights=uniform, score=0.972, total=168.0min\n",
+        "[CV] n_neighbors=3, weights=uniform ..................................\n"
+       ]
+      },
+      {
+       "name": "stderr",
+       "output_type": "stream",
+       "text": [
+        "[Parallel(n_jobs=1)]: Done   1 out of   1 | elapsed: 168.0min remaining:    0.0s\n"
+       ]
+      },
+      {
+       "name": "stdout",
+       "output_type": "stream",
+       "text": [
+        "[CV] ...... n_neighbors=3, weights=uniform, score=0.971, total=12.3min\n",
+        "[CV] n_neighbors=3, weights=uniform ..................................\n"
+       ]
+      },
+      {
+       "name": "stderr",
+       "output_type": "stream",
+       "text": [
+        "[Parallel(n_jobs=1)]: Done   2 out of   2 | elapsed: 180.3min remaining:    0.0s\n"
+       ]
+      },
+      {
+       "name": "stdout",
+       "output_type": "stream",
+       "text": [
+        "[CV] ...... n_neighbors=3, weights=uniform, score=0.969, total=11.9min\n",
+        "[CV] n_neighbors=3, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=3, weights=uniform, score=0.969, total=12.5min\n",
+        "[CV] n_neighbors=3, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=3, weights=uniform, score=0.970, total=12.7min\n",
+        "[CV] n_neighbors=3, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=3, weights=distance, score=0.972, total=12.5min\n",
+        "[CV] n_neighbors=3, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=3, weights=distance, score=0.972, total=12.8min\n",
+        "[CV] n_neighbors=3, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=3, weights=distance, score=0.970, total=12.6min\n",
+        "[CV] n_neighbors=3, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=3, weights=distance, score=0.970, total=12.9min\n",
+        "[CV] n_neighbors=3, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=3, weights=distance, score=0.971, total=11.3min\n",
+        "[CV] n_neighbors=4, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=4, weights=uniform, score=0.969, total=11.0min\n",
+        "[CV] n_neighbors=4, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=4, weights=uniform, score=0.968, total=11.0min\n",
+        "[CV] n_neighbors=4, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=4, weights=uniform, score=0.968, total=11.0min\n",
+        "[CV] n_neighbors=4, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=4, weights=uniform, score=0.967, total=11.0min\n",
+        "[CV] n_neighbors=4, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=4, weights=uniform, score=0.970, total=11.0min\n",
+        "[CV] n_neighbors=4, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=4, weights=distance, score=0.973, total=11.0min\n",
+        "[CV] n_neighbors=4, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=4, weights=distance, score=0.972, total=11.0min\n",
+        "[CV] n_neighbors=4, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=4, weights=distance, score=0.970, total=11.0min\n",
+        "[CV] n_neighbors=4, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=4, weights=distance, score=0.971, total=11.0min\n",
+        "[CV] n_neighbors=4, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=4, weights=distance, score=0.972, total=11.3min\n",
+        "[CV] n_neighbors=5, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=5, weights=uniform, score=0.970, total=10.9min\n",
+        "[CV] n_neighbors=5, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=5, weights=uniform, score=0.970, total=11.0min\n",
+        "[CV] n_neighbors=5, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=5, weights=uniform, score=0.969, total=11.0min\n",
+        "[CV] n_neighbors=5, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=5, weights=uniform, score=0.968, total=11.1min\n",
+        "[CV] n_neighbors=5, weights=uniform ..................................\n",
+        "[CV] ...... n_neighbors=5, weights=uniform, score=0.969, total=11.0min\n",
+        "[CV] n_neighbors=5, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=5, weights=distance, score=0.970, total=93.6min\n",
+        "[CV] n_neighbors=5, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=5, weights=distance, score=0.971, total=11.0min\n",
+        "[CV] n_neighbors=5, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=5, weights=distance, score=0.970, total=10.9min\n",
+        "[CV] n_neighbors=5, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=5, weights=distance, score=0.969, total=11.2min\n",
+        "[CV] n_neighbors=5, weights=distance .................................\n",
+        "[CV] ..... n_neighbors=5, weights=distance, score=0.971, total=11.1min\n"
+       ]
+      },
+      {
+       "name": "stderr",
+       "output_type": "stream",
+       "text": [
+        "[Parallel(n_jobs=1)]: Done  30 out of  30 | elapsed: 582.5min finished\n"
+       ]
+      },
+      {
+       "data": {
+        "text/plain": [
+         "GridSearchCV(cv=5, estimator=KNeighborsClassifier(),\n",
+         "             param_grid=[{'n_neighbors': [3, 4, 5],\n",
+         "                          'weights': ['uniform', 'distance']}],\n",
+         "             verbose=3)"
+        ]
+       },
+       "execution_count": 88,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "from sklearn.model_selection import GridSearchCV\n",
+      "\n",
+      "param_grid = [{'weights': [\"uniform\", \"distance\"], 'n_neighbors': [3, 4, 5]}]\n",
+      "\n",
+      "knn_clf = KNeighborsClassifier()\n",
+      "grid_search = GridSearchCV(knn_clf, param_grid, cv=5, verbose=3)\n",
+      "grid_search.fit(X_train, y_train)"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 89,
+     "metadata": {},
+     "outputs": [
+      {
+       "data": {
+        "text/plain": [
+         "{'n_neighbors': 4, 'weights': 'distance'}"
+        ]
+       },
+       "execution_count": 89,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "grid_search.best_params_"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 90,
+     "metadata": {},
+     "outputs": [
+      {
+       "data": {
+        "text/plain": [
+         "0.9716166666666666"
+        ]
+       },
+       "execution_count": 90,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "grid_search.best_score_"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 91,
+     "metadata": {},
+     "outputs": [
+      {
+       "data": {
+        "text/plain": [
+         "0.9714"
+        ]
+       },
+       "execution_count": 91,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "from sklearn.metrics import accuracy_score\n",
+      "\n",
+      "y_pred = grid_search.predict(X_test)\n",
+      "accuracy_score(y_test, y_pred)"
+     ]
+    }
+  ]

@@ -1,0 +1,61 @@
+
+
+import tensorflow as tf
+
+import numpy as np
+
+from tensorflow.python.framework import ops
+
+from tensorflow.python.framework import ia_ops
+
+from tensorflow.python.framework import dtypes
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np.datetime64)
+ ia_ops.register_np_dtype(np

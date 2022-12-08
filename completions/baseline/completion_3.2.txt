@@ -1,0 +1,32 @@
+
+
+def shift_mnist_image(image, direction):
+    if direction == "left":
+        image = np.roll(image, 1, axis=1)
+    elif direction == "right":
+        image = np.roll(image, -1, axis=1)
+    elif direction == "up":
+        image = np.roll(image, 1, axis=0)
+    elif direction == "down":
+        image = np.roll(image, -1, axis=0)
+    else:
+        raise ValueError("Invalid direction")
+    return image
+
+def expand_mnist_training_set(X_train, y_train):
+    X_train_expanded = []
+    y_train_expanded = []
+    for image, label in zip(X_train, y_train):
+        for direction in ["left", "right", "up", "down"]:
+            shifted_image = shift_mnist_image(image, direction)
+            X_train_expanded.append(shifted_image)
+            y_train_expanded.append(label)
+    return np.array(X_train_expanded), np.array(y_train_expanded)
+
+X_train_expanded, y_train_expanded = expand_mnist_training_set(X_train, y_train)
+
+model = train_model(X_train_expanded, y_train_expanded)
+
+test_accuracy = model.evaluate(X_test, y_test, verbose=0)[1]
+
+print("Test accuracy: {:.2f}%".format(test_accuracy * 100))

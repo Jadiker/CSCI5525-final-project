@@ -1,0 +1,45 @@
+
+
+# Load the MNIST dataset
+from sklearn.datasets import load_digits
+digits = load_digits()
+
+# Split the dataset into a training set and a test set
+X_train, X_test, y_train, y_test = train_test_split(digits.data, digits.target, test_size=0.1, random_state=42)
+
+# Train a Random Forest classifier on the dataset
+from sklearn.ensemble import RandomForestClassifier
+rf = RandomForestClassifier()
+rf.fit(X_train, y_train)
+
+# Time how long it takes to train the classifier
+import time
+start = time.time()
+rf.fit(X_train, y_train)
+end = time.time()
+print("Training time:", end - start)
+
+# Evaluate the classifier on the test set
+from sklearn.metrics import accuracy_score
+y_pred = rf.predict(X_test)
+print("Test set accuracy:", accuracy_score(y_test, y_pred))
+
+# Use PCA to reduce the dataset's dimensionality
+from sklearn.decomposition import PCA
+pca = PCA(n_components=0.95)
+X_train_reduced = pca.fit_transform(X_train)
+X_test_reduced = pca.transform(X_test)
+
+# Train a new Random Forest classifier on the reduced dataset
+rf_reduced = RandomForestClassifier()
+rf_reduced.fit(X_train_reduced, y_train)
+
+# Time how long it takes to train the reduced classifier
+start = time.time()
+rf_reduced.fit(X_train_reduced, y_train)
+end = time.time()
+print("Training time (reduced):", end - start)
+
+# Evaluate the reduced classifier on the test set
+y_pred_reduced = rf_reduced.predict(X_test_reduced)
+print("Test set accuracy (reduced):", accuracy_score(y_test, y_pred_reduced))

@@ -1,0 +1,385 @@
+[
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "## 10."
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "_Exercise: train an SVM regressor on the California housing dataset._"
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "Let's load the dataset using Scikit-Learn's `fetch_california_housing()` function:"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 61,
+     "metadata": {},
+     "outputs": [],
+     "source": [
+      "from sklearn.datasets import fetch_california_housing\n",
+      "\n",
+      "housing = fetch_california_housing()\n",
+      "X = housing[\"data\"]\n",
+      "y = housing[\"target\"]"
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "Split it into a training set and a test set:"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 62,
+     "metadata": {},
+     "outputs": [],
+     "source": [
+      "from sklearn.model_selection import train_test_split\n",
+      "\n",
+      "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "Don't forget to scale the data:"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 63,
+     "metadata": {},
+     "outputs": [],
+     "source": [
+      "from sklearn.preprocessing import StandardScaler\n",
+      "\n",
+      "scaler = StandardScaler()\n",
+      "X_train_scaled = scaler.fit_transform(X_train)\n",
+      "X_test_scaled = scaler.transform(X_test)"
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "Let's train a simple `LinearSVR` first:"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 64,
+     "metadata": {},
+     "outputs": [
+      {
+       "name": "stderr",
+       "output_type": "stream",
+       "text": [
+        "/Users/ageron/miniconda3/envs/tf2/lib/python3.7/site-packages/sklearn/svm/_base.py:977: ConvergenceWarning: Liblinear failed to converge, increase the number of iterations.\n",
+        "  \"the number of iterations.\", ConvergenceWarning)\n"
+       ]
+      },
+      {
+       "data": {
+        "text/plain": [
+         "LinearSVR(random_state=42)"
+        ]
+       },
+       "execution_count": 64,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "from sklearn.svm import LinearSVR\n",
+      "\n",
+      "lin_svr = LinearSVR(random_state=42)\n",
+      "lin_svr.fit(X_train_scaled, y_train)"
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "Let's see how it performs on the training set:"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 65,
+     "metadata": {},
+     "outputs": [
+      {
+       "data": {
+        "text/plain": [
+         "0.9641780189948642"
+        ]
+       },
+       "execution_count": 65,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "from sklearn.metrics import mean_squared_error\n",
+      "\n",
+      "y_pred = lin_svr.predict(X_train_scaled)\n",
+      "mse = mean_squared_error(y_train, y_pred)\n",
+      "mse"
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "Let's look at the RMSE:"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 66,
+     "metadata": {},
+     "outputs": [
+      {
+       "data": {
+        "text/plain": [
+         "0.9819256687727764"
+        ]
+       },
+       "execution_count": 66,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "np.sqrt(mse)"
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "In this training set, the targets are tens of thousands of dollars. The RMSE gives a rough idea of the kind of error you should expect (with a higher weight for large errors): so with this model we can expect errors somewhere around $10,000. Not great. Let's see if we can do better with an RBF Kernel. We will use randomized search with cross validation to find the appropriate hyperparameter values for `C` and `gamma`:"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 67,
+     "metadata": {},
+     "outputs": [
+      {
+       "name": "stderr",
+       "output_type": "stream",
+       "text": [
+        "[Parallel(n_jobs=1)]: Using backend SequentialBackend with 1 concurrent workers.\n"
+       ]
+      },
+      {
+       "name": "stdout",
+       "output_type": "stream",
+       "text": [
+        "Fitting 3 folds for each of 10 candidates, totalling 30 fits\n",
+        "[CV] C=4.745401188473625, gamma=0.07969454818643928 ..................\n",
+        "[CV] ... C=4.745401188473625, gamma=0.07969454818643928, total=   4.7s\n",
+        "[CV] C=4.745401188473625, gamma=0.07969454818643928 ..................\n"
+       ]
+      },
+      {
+       "name": "stderr",
+       "output_type": "stream",
+       "text": [
+        "[Parallel(n_jobs=1)]: Done   1 out of   1 | elapsed:    4.7s remaining:    0.0s\n"
+       ]
+      },
+      {
+       "name": "stdout",
+       "output_type": "stream",
+       "text": [
+        "[CV] ... C=4.745401188473625, gamma=0.07969454818643928, total=   4.6s\n",
+        "[CV] C=4.745401188473625, gamma=0.07969454818643928 ..................\n",
+        "[CV] ... C=4.745401188473625, gamma=0.07969454818643928, total=   4.7s\n",
+        "[CV] C=8.31993941811405, gamma=0.015751320499779724 ..................\n",
+        "[CV] ... C=8.31993941811405, gamma=0.015751320499779724, total=   4.3s\n",
+        "[CV] C=8.31993941811405, gamma=0.015751320499779724 ..................\n",
+        "[CV] ... C=8.31993941811405, gamma=0.015751320499779724, total=   4.2s\n",
+        "[CV] C=8.31993941811405, gamma=0.015751320499779724 ..................\n",
+        "[CV] ... C=8.31993941811405, gamma=0.015751320499779724, total=   4.3s\n",
+        "[CV] C=2.560186404424365, gamma=0.002051110418843397 .................\n",
+        "[CV] .. C=2.560186404424365, gamma=0.002051110418843397, total=   3.8s\n",
+        "[CV] C=2.560186404424365, gamma=0.002051110418843397 .................\n",
+        "[CV] .. C=2.560186404424365, gamma=0.002051110418843397, total=   3.8s\n",
+        "[CV] C=2.560186404424365, gamma=0.002051110418843397 .................\n",
+        "[CV] .. C=2.560186404424365, gamma=0.002051110418843397, total=   3.9s\n",
+        "[CV] C=1.5808361216819946, gamma=0.05399484409787431 .................\n",
+        "[CV] .. C=1.5808361216819946, gamma=0.05399484409787431, total=   3.9s\n",
+        "[CV] C=1.5808361216819946, gamma=0.05399484409787431 .................\n",
+        "[CV] .. C=1.5808361216819946, gamma=0.05399484409787431, total=   3.8s\n",
+        "[CV] C=1.5808361216819946, gamma=0.05399484409787431 .................\n",
+        "[CV] .. C=1.5808361216819946, gamma=0.05399484409787431, total=   3.9s\n",
+        "[CV] C=7.011150117432088, gamma=0.026070247583707663 .................\n",
+        "[CV] .. C=7.011150117432088, gamma=0.026070247583707663, total=   4.3s\n",
+        "[CV] C=7.011150117432088, gamma=0.026070247583707663 .................\n",
+        "[CV] .. C=7.011150117432088, gamma=0.026070247583707663, total=   4.4s\n",
+        "[CV] C=7.011150117432088, gamma=0.026070247583707663 .................\n",
+        "[CV] .. C=7.011150117432088, gamma=0.026070247583707663, total=   4.4s\n",
+        "[CV] C=1.2058449429580245, gamma=0.0870602087830485 ..................\n",
+        "[CV] ... C=1.2058449429580245, gamma=0.0870602087830485, total=   3.8s\n",
+        "[CV] C=1.2058449429580245, gamma=0.0870602087830485 ..................\n",
+        "[CV] ... C=1.2058449429580245, gamma=0.0870602087830485, total=   3.9s\n",
+        "[CV] C=1.2058449429580245, gamma=0.0870602087830485 ..................\n",
+        "[CV] ... C=1.2058449429580245, gamma=0.0870602087830485, total=   3.9s\n",
+        "[CV] C=9.324426408004218, gamma=0.0026587543983272693 ................\n",
+        "[CV] . C=9.324426408004218, gamma=0.0026587543983272693, total=   4.0s\n",
+        "[CV] C=9.324426408004218, gamma=0.0026587543983272693 ................\n",
+        "[CV] . C=9.324426408004218, gamma=0.0026587543983272693, total=   4.0s\n",
+        "[CV] C=9.324426408004218, gamma=0.0026587543983272693 ................\n",
+        "[CV] . C=9.324426408004218, gamma=0.0026587543983272693, total=   3.9s\n",
+        "[CV] C=2.818249672071006, gamma=0.0023270677083837795 ................\n",
+        "[CV] . C=2.818249672071006, gamma=0.0023270677083837795, total=   3.8s\n",
+        "[CV] C=2.818249672071006, gamma=0.0023270677083837795 ................\n",
+        "[CV] . C=2.818249672071006, gamma=0.0023270677083837795, total=   3.8s\n",
+        "[CV] C=2.818249672071006, gamma=0.0023270677083837795 ................\n",
+        "[CV] . C=2.818249672071006, gamma=0.0023270677083837795, total=   3.8s\n",
+        "[CV] C=4.042422429595377, gamma=0.011207606211860567 .................\n",
+        "[CV] .. C=4.042422429595377, gamma=0.011207606211860567, total=   3.8s\n",
+        "[CV] C=4.042422429595377, gamma=0.011207606211860567 .................\n",
+        "[CV] .. C=4.042422429595377, gamma=0.011207606211860567, total=   3.9s\n",
+        "[CV] C=4.042422429595377, gamma=0.011207606211860567 .................\n",
+        "[CV] .. C=4.042422429595377, gamma=0.011207606211860567, total=   3.9s\n",
+        "[CV] C=5.319450186421157, gamma=0.003823475224675185 .................\n",
+        "[CV] .. C=5.319450186421157, gamma=0.003823475224675185, total=   3.8s\n",
+        "[CV] C=5.319450186421157, gamma=0.003823475224675185 .................\n",
+        "[CV] .. C=5.319450186421157, gamma=0.003823475224675185, total=   3.9s\n",
+        "[CV] C=5.319450186421157, gamma=0.003823475224675185 .................\n",
+        "[CV] .. C=5.319450186421157, gamma=0.003823475224675185, total=   3.9s\n"
+       ]
+      },
+      {
+       "name": "stderr",
+       "output_type": "stream",
+       "text": [
+        "[Parallel(n_jobs=1)]: Done  30 out of  30 | elapsed:  2.0min finished\n"
+       ]
+      },
+      {
+       "data": {
+        "text/plain": [
+         "RandomizedSearchCV(cv=3, estimator=SVR(),\n",
+         "                   param_distributions={'C': <scipy.stats._distn_infrastructure.rv_frozen object at 0x7f9370860850>,\n",
+         "                                        'gamma': <scipy.stats._distn_infrastructure.rv_frozen object at 0x7f9380503890>},\n",
+         "                   random_state=42, verbose=2)"
+        ]
+       },
+       "execution_count": 67,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "from sklearn.svm import SVR\n",
+      "from sklearn.model_selection import RandomizedSearchCV\n",
+      "from scipy.stats import reciprocal, uniform\n",
+      "\n",
+      "param_distributions = {\"gamma\": reciprocal(0.001, 0.1), \"C\": uniform(1, 10)}\n",
+      "rnd_search_cv = RandomizedSearchCV(SVR(), param_distributions, n_iter=10, verbose=2, cv=3, random_state=42)\n",
+      "rnd_search_cv.fit(X_train_scaled, y_train)"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 68,
+     "metadata": {},
+     "outputs": [
+      {
+       "data": {
+        "text/plain": [
+         "SVR(C=4.745401188473625, gamma=0.07969454818643928)"
+        ]
+       },
+       "execution_count": 68,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "rnd_search_cv.best_estimator_"
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "Now let's measure the RMSE on the training set:"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 69,
+     "metadata": {},
+     "outputs": [
+      {
+       "data": {
+        "text/plain": [
+         "0.5727524770785359"
+        ]
+       },
+       "execution_count": 69,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "y_pred = rnd_search_cv.best_estimator_.predict(X_train_scaled)\n",
+      "mse = mean_squared_error(y_train, y_pred)\n",
+      "np.sqrt(mse)"
+     ]
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "Looks much better than the linear model. Let's select this model and evaluate it on the test set:"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": 70,
+     "metadata": {},
+     "outputs": [
+      {
+       "data": {
+        "text/plain": [
+         "0.5929168385528734"
+        ]
+       },
+       "execution_count": 70,
+       "metadata": {},
+       "output_type": "execute_result"
+      }
+     ],
+     "source": [
+      "y_pred = rnd_search_cv.best_estimator_.predict(X_test_scaled)\n",
+      "mse = mean_squared_error(y_test, y_pred)\n",
+      "np.sqrt(mse)"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "execution_count": null,
+     "metadata": {},
+     "outputs": [],
+     "source": []
+    }
+   ]

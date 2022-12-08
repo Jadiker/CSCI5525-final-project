@@ -1,0 +1,11 @@
+
+
+The code for the best SVR predictor is as follows:
+
+from sklearn.svm import SVR
+
+svr = SVR(kernel='linear', C=1)
+
+svr.fit(X, y)
+
+y_pred = svr.predict(X)

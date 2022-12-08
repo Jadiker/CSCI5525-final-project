@@ -1,0 +1,122 @@
+ from keras.models import Sequential
+
+from keras.layers import Dense, Activation
+
+from keras.optimizers import SGD
+
+from keras.utils import np_utils
+
+from keras.datasets import bach_chorales
+
+from keras.preprocessing import sequence
+
+from keras.callbacks import TensorBoard
+
+from keras.models import Model
+
+from keras.preprocessing import scale
+
+from keras.utils import np_utils
+
+from keras.utils.np_utils import to_categorical
+
+from keras.utils.np_utils import one_hot
+train_chorales = bach_chorales.chorales
+
+test_chorales = bach_chorales.chorales[:100]
+
+np.random.seed(42)
+
+np.random.shuffle(train_chorales)
+
+train_chorales = train_chorales[:len(test_chorales)]
+
+test_chorales = test_chorales[:len(train_chorales)]
+
+np.random.seed(42)
+
+np.random.shuffle(test_chorales)
+
+test_chorales = test_chorales[:len(train_chorales)]
+
+X_train = sequence.pad_sequences(train_chorales, maxlen=None, axis=0, padding="same")
+
+X_test = sequence.pad_sequences(test_chorales, maxlen=None, axis=0, padding="same")
+
+y_train = to_categorical(y_train)
+X_train
+
+X_test
+
+y_train
+
+y_test
+
+tf_model = Model(sequential=True)
+
+tf_model.add(Dense(128, kernel_initializer="random_uniform",
+
+activation="relu"))
+
+tf_model.add(Dense(64, kernel_initializer="random_uniform",
+
+activation="relu"))
+
+tf_model.add(Dense(1, kernel_initializer="random_uniform",
+
+activation="sigmoid"))
+
+tf_model.compile(loss="binary_crossentropy",
+
+optimizer="sgd",
+
+metrics=["accuracy"])
+
+tf_model.fit(X_train, y_train, epochs=5, validation_data=(X_test, y_test))
+
+tf_model.evaluate(X_test, y_test)
+
+tf_model.save("model.h5")
+
+np.random.seed(42)
+
+np.random.shuffle(train_chorales)
+
+X_train = sequence.pad_sequences(train_chorales, maxlen=None, axis=0, padding="same")
+
+X_test = sequence.pad_sequences(test_chorales, maxlen=None, axis=0, padding="same")
+y_train = to_categorical(y_train)
+
+y_test = to_categorical(y_test)
+
+keras_coco_model = keras.models.coco_model.CocoModel(
+
+weights="coco_weights_tf_dim_ordering_tf_kernels.h5",
+
+include_top=False,
+
+input_shape=X_train.shape[1:],
+
+batch_input_shape=X_train.shape[1:],
+
+top_k=10,
+
+tune_parameters={"coco_nodes": 64, "coco_weights": {"scale": 0.001}})
+
+keras_coco_model.compile(loss="binary_crossentropy",
+
+optimizer="sgd",
+
+metrics=["accuracy"])
+
+keras_coco_model.fit(X_train, y_train, epochs=5, validation_data=(X_test, y_test))
+
+keras_coco_model.evaluate(X_test, y_test)
+
+keras_coco_model.save("coco_model.h5")
+
+np.random.seed(42)
+
+np.random.shuffle(train_chorales)
+
+X_train = sequence.pad_sequ

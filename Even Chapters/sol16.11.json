@@ -1,0 +1,198 @@
+
+[
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The simplest way to use recent language models is to use the excellent [transformers library](https://huggingface.co/transformers/), open sourced by Hugging Face. It provides many modern neural net architectures (including BERT, GPT-2, RoBERTa, XLM, DistilBert, XLNet and more) for Natural Language Processing (NLP), including many pretrained models. It relies on either TensorFlow or PyTorch. Best of all: it's amazingly simple to use."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First, let's load a pretrained model. In this example, we will use OpenAI's GPT model, with an additional Language Model on top (just a linear layer with weights tied to the input embeddings). Let's import it and load the pretrained weights (this will download about 445MB of data to `~/.cache/torch/transformers`):"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 130,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from transformers import TFOpenAIGPTLMHeadModel\n",
+    "\n",
+    "model = TFOpenAIGPTLMHeadModel.from_pretrained(\"openai-gpt\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Next we will need a specialized tokenizer for this model. This one will try to use the [spaCy](https://spacy.io/) and [ftfy](https://pypi.org/project/ftfy/) libraries if they are installed, or else it will fall back to BERT's `BasicTokenizer` followed by Byte-Pair Encoding (which should be fine for most use cases)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 131,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from transformers import OpenAIGPTTokenizer\n",
+    "\n",
+    "tokenizer = OpenAIGPTTokenizer.from_pretrained(\"openai-gpt\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now let's use the tokenizer to tokenize and encode the prompt text:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 132,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<tf.Tensor: shape=(1, 10), dtype=int32, numpy=\n",
+       "array([[  616,  5751,  6404,   498,  9606,   240,   616, 26271,  7428,\n",
+       "        16187]], dtype=int32)>"
+      ]
+     },
+     "execution_count": 132,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "prompt_text = \"This royal throne of kings, this sceptred isle\"\n",
+    "encoded_prompt = tokenizer.encode(prompt_text,\n",
+    "                                  add_special_tokens=False,\n",
+    "                                  return_tensors=\"tf\")\n",
+    "encoded_prompt"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Easy! Next, let's use the model to generate text after the prompt. We will generate 5 different sentences, each starting with the prompt text, followed by 40 additional tokens. For an explanation of what all the hyperparameters do, make sure to check out this great [blog post](https://huggingface.co/blog/how-to-generate) by Patrick von Platen (from Hugging Face). You can play around with the hyperparameters to try to obtain better results."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 133,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<tf.Tensor: shape=(5, 50), dtype=int32, numpy=\n",
+       "array([[  616,  5751,  6404,   498,  9606,   240,   616, 26271,  7428,\n",
+       "        16187,   239,   784,   645,  1184,   558,  1886,   688,  6437,\n",
+       "          240,   784,   645,   507,   641,  5486,   240,   600,   636,\n",
+       "          868,   604,   694,  2816,   485,  1894,   822,   481,  1491,\n",
+       "          600,   880,  6061,   239,   256, 40477,   256,   600,   635,\n",
+       "          538,   604,  1816,   525,   239],\n",
+       "       [  616,  5751,  6404,   498,  9606,   240,   616, 26271,  7428,\n",
+       "        16187,   488,  1288,   989,   640, 16605,   239,   256, 40477,\n",
+       "          674,   481, 12744,  3912,   488,  3912,  5936,  2441,   811,\n",
+       "          488,  1040,   485,   754,  3952,   239, 40477,   481,  1375,\n",
+       "         1981,   833,  1210,   481, 17384,   488,   481,  3089,   488,\n",
+       "          481,  4815,   509,   498,  1424],\n",
+       "       [  616,  5751,  6404,   498,  9606,   240,   616, 26271,  7428,\n",
+       "        16187,   980,   987,  1074, 13138,   240,   531,   501,   517,\n",
+       "          836,   525, 12659,   485,  2642,   512,   239,   500,   616,\n",
+       "         7339,   704,   989,  1259, 38752,   481,  9606,   498,   481,\n",
+       "         6903,   239,   500,   616,  7339,   704,  3064,   994,   580,\n",
+       "         3953,   617,   616,  4741,   488],\n",
+       "       [  616,  5751,  6404,   498,  9606,   240,   616, 26271,  7428,\n",
+       "        16187, 10595,   485,   510,   239,   244, 40477,   244,   481,\n",
+       "         1424,  6404,   498,  1922,    23, 37492,   257,   244, 40477,\n",
+       "          244,  3491,   240,   244,   603,   481,   618,   556,   246,\n",
+       "         3386,   498,   524,   756,   239,   244,   616,  1276,   509,\n",
+       "         1098, 10945,   498,   246,  6785],\n",
+       "       [  616,  5751,  6404,   498,  9606,   240,   616, 26271,  7428,\n",
+       "        16187,   544,  2203,   239,   616,   544,   246,  6460,   260,\n",
+       "          850,   629,  4844,  3064,  3766,   240,   246,  1082,   806,\n",
+       "         9606,   640, 32581,   240,   595,  7914,  1243,   488, 18535,\n",
+       "          239,   249,   587,   538,   788,   775,  2319,   498,  1013,\n",
+       "          525,   544,   595,   754,  1074]], dtype=int32)>"
+      ]
+     },
+     "execution_count": 133,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "num_sequences = 5\n",
+    "length = 40\n",
+    "\n",
+    "generated_sequences = model.generate(\n",
+    "    input_ids=encoded_prompt,\n",
+    "    do_sample=True,\n",
+    "    max_length=length + len(encoded_prompt[0]),\n",
+    "    temperature=1.0,\n",
+    "    top_k=0,\n",
+    "    top_p=0.9,\n",
+    "    repetition_penalty=1.0,\n",
+    "    num_return_sequences=num_sequences,\n",
+    ")\n",
+    "\n",
+    "generated_sequences"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now let's decode the generated sequences and print them:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 134,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "this royal throne of kings, this sceptred isle. even if someone had given them permission, even if it were required, they would never have been allowed to live through the hell they've survived.'\n",
+      "'they couldn't have known that.\n",
+      "--------------------------------------------------------------------------------\n",
+      "this royal throne of kings, this sceptred isle and these people are royalty.'\n",
+      " then the mute prince and prince edward broke off and went to their rooms. \n",
+      " the talk passed again between the princes and the guards and the princess was of great\n",
+      "--------------------------------------------------------------------------------\n",
+      "this royal throne of kings, this sceptred isle has its own highness, an alatte that waits to save you. in this kingdom your people must emulate the kings of the realm. in this kingdom your kin should be saved from this pit and\n",
+      "--------------------------------------------------------------------------------\n",
+      "this royal throne of kings, this sceptred isle belongs to me. \" \n",
+      " \" the great throne of penvynne? \" \n",
+      " \" indeed, \" said the king with a nod of his head. \" this world was once composed of a magical\n",
+      "--------------------------------------------------------------------------------\n",
+      "this royal throne of kings, this sceptred isle is empty. this is a modern - day fedaykin court, a place where kings are governed, not emperors and judges. i don't see any sign of life that is not their own\n",
+      "--------------------------------------------------------------------------------\n"
+     ]
+    }
+   ],
+   "source": [
+    "for sequence in generated_sequences:\n",
+    "    text = tokenizer.decode(sequence, clean_up_tokenization_spaces=True)\n",
+    "    print(text)\n",
+    "    print(\"-\" * 80)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "You can try more recent (and larger) models, such as GPT-2, CTRL, Transformer-XL or XLNet, which are all available as pretrained models in the transformers library, including variants with Language Models on top. The preprocessing steps vary slightly between models, so make sure to check out this [generation example](https://github.com/huggingface/transformers/blob/master/examples/run_generation.py) from the transformers documentation (this example uses PyTorch, but it will work with very little tweaks, such as adding `TF` at the beginning of the model class name, removing the `.to()` method calls, and using `return_tensors=\"tf\"` instead of `\"pt\"`."
+   ]
+  }
+]  

@@ -1,0 +1,61 @@
+ from keras.preprocessing import text
+
+from keras.models import Sequential
+
+from keras.layers import Dense
+
+from keras.optimizers import SGD
+
+from keras.utils import np_utils
+
+from keras.datasets import fetch_opencv_dataset
+
+from keras.preprocessing import sequence
+
+from keras.utils import to_categorical
+
+from keras.utils.np_utils import to_np
+
+from keras.utils.np_utils import np_random_seed
+
+from keras.utils.np_utils import np_random_seed
+
+np_random_seed(42)
+
+X_train_opencv = sequence.pad_sequences(
+
+fetch_opencv_dataset("opencv_train_leaks", cache=True),
+X_train_opencv.shape[:2],
+padding="same",
+axis=None)
+X_train_opencv = to_np(X_train_opencv)
+X_train_opencv = to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = np_utils.to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = to_np(X_train_opencv)
+X_train_opencv = to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = np_utils.to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = to_np(X_train_opencv)
+X_train_opencv = to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = np_utils.to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = to_np(X_train_opencv)
+X_train_opencv = to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = np_utils.to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = to_np(X_train_opencv)
+X_train_opencv = to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = np_utils.to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = to_np(X_train_opencv)
+X_train_opencv = to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = np_utils.to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = to_np(X_train_opencv)
+X_train_opencv = to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = np_utils.to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = to_np(X_train_opencv)
+X_train_opencv = to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = np_utils.to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = to_np(X_train_opencv)
+X_train_opencv = to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = np_utils.to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = to_np(X_train_opencv)
+X_train_opencv = to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = np_utils.to_categorical(X_train_opencv, num_classes=10)
+X_train_opencv = to_np(X_train_

@@ -1,0 +1,67 @@
+ 
+
+1. We need to import the necessary libraries for this task. We will need numpy, pandas, matplotlib, and seaborn for data analysis and manipulation, and sklearn for the support vector machine regressor.
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.svm import SVR
+
+2. Next, we need to load in the dataset. We can do this using pandas.
+
+housing = pd.read_csv('https://raw.githubusercontent.com/ageron/handson-ml2/master/')
+
+3. Now, let's take a look at the dataset.
+
+housing.head()
+
+4. We need to split the data into training and test sets. We will use 80% of the data for training and 20% for testing.
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(housing, housing['price'], test_size=0.2, random_state=42)
+
+5. Now, we can train the support vector machine regressor. We will use the kernel="linear" option.
+
+svr_linear = SVR(kernel='linear')
+svr_linear.fit(X_train, y_train)
+
+6. Let's see how well the model performs on the training data.
+
+y_pred_linear = svr_linear.predict(X_train)
+
+from sklearn.metrics import mean_squared_error
+
+mse_linear = mean_squared_error(y_train, y_pred_linear)
+
+print('Mean squared error: %.2f' % mse_linear)
+
+7. Now, let's see how well the model performs on the test data.
+
+y_pred_linear = svr_linear.predict(X_test)
+
+mse_linear = mean_squared_error(y_test, y_pred_linear)
+
+print('Mean squared error: %.2f' % mse_linear)
+
+8. We can also use the kernel="rbf" option.
+
+svr_rbf = SVR(kernel='rbf')
+svr_rbf.fit(X_train, y_train)
+
+9. Let's see how well the model performs on the training data.
+
+y_pred_rbf = svr_rbf.predict(X_train)
+
+mse_rbf = mean_squared_error(y_train, y_pred_rbf)
+
+print('Mean squared error: %.2f' % mse_rbf)
+
+10. Now, let's see how well the model performs on the test data.
+
+y_pred_rbf = svr_rbf.predict(X_test)
+
+mse_rbf = mean_squared_error(y_test, y_pred_rbf)
+
+print('Mean squared error: %.2f' % mse_rbf)

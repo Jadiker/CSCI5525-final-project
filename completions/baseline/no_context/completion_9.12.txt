@@ -1,0 +1,3 @@
+
+
+from sklearn import datasets from sklearn.decomposition import PCA from sklearn.mixture import GaussianMixture # Load the Olivetti faces dataset data = datasets.fetch_olivetti_faces() # Reduce the dataset's dimensionality pca = PCA(n_components=0.99, whiten=True) data_pca = pca.fit_transform(data.data) # Train a Gaussian mixture model gmm = GaussianMixture(n_components=40) gmm.fit(data_pca)

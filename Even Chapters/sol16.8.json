@@ -1,0 +1,413 @@
+[
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "First we need to build a function that generates strings based on a grammar. The grammar will be represented as a list of possible transitions for each state. A transition specifies the string to output (or a grammar to generate it) and the next state."
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 78,
+    "metadata": {},
+    "outputs": [],
+    "source": [
+     "default_reber_grammar = [\n",
+     "    [(\"B\", 1)],           # (state 0) =B=>(state 1)\n",
+     "    [(\"T\", 2), (\"P\", 3)], # (state 1) =T=>(state 2) or =P=>(state 3)\n",
+     "    [(\"S\", 2), (\"X\", 4)], # (state 2) =S=>(state 2) or =X=>(state 4)\n",
+     "    [(\"T\", 3), (\"V\", 5)], # and so on...\n",
+     "    [(\"X\", 3), (\"S\", 6)],\n",
+     "    [(\"P\", 4), (\"V\", 6)],\n",
+     "    [(\"E\", None)]]        # (state 6) =E=>(terminal state)\n",
+     "\n",
+     "embedded_reber_grammar = [\n",
+     "    [(\"B\", 1)],\n",
+     "    [(\"T\", 2), (\"P\", 3)],\n",
+     "    [(default_reber_grammar, 4)],\n",
+     "    [(default_reber_grammar, 5)],\n",
+     "    [(\"T\", 6)],\n",
+     "    [(\"P\", 6)],\n",
+     "    [(\"E\", None)]]\n",
+     "\n",
+     "def generate_string(grammar):\n",
+     "    state = 0\n",
+     "    output = []\n",
+     "    while state is not None:\n",
+     "        index = np.random.randint(len(grammar[state]))\n",
+     "        production, state = grammar[state][index]\n",
+     "        if isinstance(production, list):\n",
+     "            production = generate_string(grammar=production)\n",
+     "        output.append(production)\n",
+     "    return \"\".join(output)"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "Let's generate a few strings based on the default Reber grammar:"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 79,
+    "metadata": {},
+    "outputs": [
+     {
+      "name": "stdout",
+      "output_type": "stream",
+      "text": [
+       "BTXXTTVPXTVPXTTVPSE BPVPSE BTXSE BPVVE BPVVE BTSXSE BPTVPXTTTVVE BPVVE BTXSE BTXXVPSE BPTTTTTTTTVVE BTXSE BPVPSE BTXSE BPTVPSE BTXXTVPSE BPVVE BPVVE BPVVE BPTTVVE BPVVE BPVVE BTXXVVE BTXXVVE BTXXVPXVVE "
+      ]
+     }
+    ],
+    "source": [
+     "np.random.seed(42)\n",
+     "\n",
+     "for _ in range(25):\n",
+     "    print(generate_string(default_reber_grammar), end=\" \")"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "Looks good. Now let's generate a few strings based on the embedded Reber grammar:"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 80,
+    "metadata": {},
+    "outputs": [
+     {
+      "name": "stdout",
+      "output_type": "stream",
+      "text": [
+       "BTBPTTTVPXTVPXTTVPSETE BPBPTVPSEPE BPBPVVEPE BPBPVPXVVEPE BPBTXXTTTTVVEPE BPBPVPSEPE BPBTXXVPSEPE BPBTSSSSSSSXSEPE BTBPVVETE BPBTXXVVEPE BPBTXXVPSEPE BTBTXXVVETE BPBPVVEPE BPBPVVEPE BPBTSXSEPE BPBPVVEPE BPBPTVPSEPE BPBTXXVVEPE BTBPTVPXVVETE BTBPVVETE BTBTSSSSSSSXXVVETE BPBTSSSXXTTTTVPSEPE BTBPTTVVETE BPBTXXTVVEPE BTBTXSETE "
+      ]
+     }
+    ],
+    "source": [
+     "np.random.seed(42)\n",
+     "\n",
+     "for _ in range(25):\n",
+     "    print(generate_string(embedded_reber_grammar), end=\" \")"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "Okay, now we need a function to generate strings that do not respect the grammar. We could generate a random string, but the task would be a bit too easy, so instead we will generate a string that respects the grammar, and we will corrupt it by changing just one character:"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 81,
+    "metadata": {},
+    "outputs": [],
+    "source": [
+     "POSSIBLE_CHARS = \"BEPSTVX\"\n",
+     "\n",
+     "def generate_corrupted_string(grammar, chars=POSSIBLE_CHARS):\n",
+     "    good_string = generate_string(grammar)\n",
+     "    index = np.random.randint(len(good_string))\n",
+     "    good_char = good_string[index]\n",
+     "    bad_char = np.random.choice(sorted(set(chars) - set(good_char)))\n",
+     "    return good_string[:index] + bad_char + good_string[index + 1:]"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "Let's look at a few corrupted strings:"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 82,
+    "metadata": {},
+    "outputs": [
+     {
+      "name": "stdout",
+      "output_type": "stream",
+      "text": [
+       "BTBPTTTPPXTVPXTTVPSETE BPBTXEEPE BPBPTVVVEPE BPBTSSSSXSETE BPTTXSEPE BTBPVPXTTTTTTEVETE BPBTXXSVEPE BSBPTTVPSETE BPBXVVEPE BEBTXSETE BPBPVPSXPE BTBPVVVETE BPBTSXSETE BPBPTTTPTTTTTVPSEPE BTBTXXTTSTVPSETE BBBTXSETE BPBTPXSEPE BPBPVPXTTTTVPXTVPXVPXTTTVVEVE BTBXXXTVPSETE BEBTSSSSSXXVPXTVVETE BTBXTTVVETE BPBTXSTPE BTBTXXTTTVPSBTE BTBTXSETX BTBTSXSSTE "
+      ]
+     }
+    ],
+    "source": [
+     "np.random.seed(42)\n",
+     "\n",
+     "for _ in range(25):\n",
+     "    print(generate_corrupted_string(embedded_reber_grammar), end=\" \")"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "We cannot feed strings directly to an RNN, so we need to encode them somehow. One option would be to one-hot encode each character. Another option is to use embeddings. Let's go for the second option (but since there are just a handful of characters, one-hot encoding would probably be a good option as well). For embeddings to work, we need to convert each string into a sequence of character IDs. Let's write a function for that, using each character's index in the string of possible characters \"BEPSTVX\":"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 83,
+    "metadata": {},
+    "outputs": [],
+    "source": [
+     "def string_to_ids(s, chars=POSSIBLE_CHARS):\n",
+     "    return [chars.index(c) for c in s]"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 84,
+    "metadata": {},
+    "outputs": [
+     {
+      "data": {
+       "text/plain": [
+        "[0, 4, 4, 4, 6, 6, 5, 5, 1, 4, 1]"
+       ]
+      },
+      "execution_count": 84,
+      "metadata": {},
+      "output_type": "execute_result"
+     }
+    ],
+    "source": [
+     "string_to_ids(\"BTTTXXVVETE\")"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "We can now generate the dataset, with 50% good strings, and 50% bad strings:"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 85,
+    "metadata": {},
+    "outputs": [],
+    "source": [
+     "def generate_dataset(size):\n",
+     "    good_strings = [string_to_ids(generate_string(embedded_reber_grammar))\n",
+     "                    for _ in range(size // 2)]\n",
+     "    bad_strings = [string_to_ids(generate_corrupted_string(embedded_reber_grammar))\n",
+     "                   for _ in range(size - size // 2)]\n",
+     "    all_strings = good_strings + bad_strings\n",
+     "    X = tf.ragged.constant(all_strings, ragged_rank=1)\n",
+     "    y = np.array([[1.] for _ in range(len(good_strings))] +\n",
+     "                 [[0.] for _ in range(len(bad_strings))])\n",
+     "    return X, y"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 86,
+    "metadata": {},
+    "outputs": [],
+    "source": [
+     "np.random.seed(42)\n",
+     "\n",
+     "X_train, y_train = generate_dataset(10000)\n",
+     "X_valid, y_valid = generate_dataset(2000)"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "Let's take a look at the first training sequence:"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 87,
+    "metadata": {},
+    "outputs": [
+     {
+      "data": {
+       "text/plain": [
+        "<tf.Tensor: shape=(22,), dtype=int32, numpy=\n",
+        "array([0, 4, 0, 2, 4, 4, 4, 5, 2, 6, 4, 5, 2, 6, 4, 4, 5, 2, 3, 1, 4, 1],\n",
+        "      dtype=int32)>"
+       ]
+      },
+      "execution_count": 87,
+      "metadata": {},
+      "output_type": "execute_result"
+     }
+    ],
+    "source": [
+     "X_train[0]"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "What class does it belong to?"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 88,
+    "metadata": {},
+    "outputs": [
+     {
+      "data": {
+       "text/plain": [
+        "array([1.])"
+       ]
+      },
+      "execution_count": 88,
+      "metadata": {},
+      "output_type": "execute_result"
+     }
+    ],
+    "source": [
+     "y_train[0]"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "Perfect! We are ready to create the RNN to identify good strings. We build a simple sequence binary classifier:"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 89,
+    "metadata": {},
+    "outputs": [
+     {
+      "name": "stdout",
+      "output_type": "stream",
+      "text": [
+       "Epoch 1/20\n"
+      ]
+     },
+     {
+      "name": "stderr",
+      "output_type": "stream",
+      "text": [
+       "/Users/ageron/miniconda3/envs/tf2/lib/python3.7/site-packages/tensorflow_core/python/framework/indexed_slices.py:433: UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.\n",
+       "  \"Converting sparse IndexedSlices to a dense Tensor of unknown shape. \"\n",
+       "/Users/ageron/miniconda3/envs/tf2/lib/python3.7/site-packages/tensorflow_core/python/framework/indexed_slices.py:433: UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.\n",
+       "  \"Converting sparse IndexedSlices to a dense Tensor of unknown shape. \"\n"
+      ]
+     },
+     {
+      "name": "stdout",
+      "output_type": "stream",
+      "text": [
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 5s 42us/sample - loss: 0.6847 - accuracy: 0.5138 - val_loss: 8.1518 - val_accuracy: 0.6115\n",
+       "Epoch 2/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 28us/sample - loss: 0.6524 - accuracy: 0.5571 - val_loss: 7.9259 - val_accuracy: 0.6085\n",
+       "Epoch 3/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 28us/sample - loss: 0.6686 - accuracy: 0.5783 - val_loss: 7.7483 - val_accuracy: 0.6110\n",
+       "Epoch 4/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 28us/sample - loss: 0.6201 - accuracy: 0.5969 - val_loss: 7.5567 - val_accuracy: 0.6110\n",
+       "Epoch 5/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 28us/sample - loss: 0.5705 - accuracy: 0.6428 - val_loss: 6.9117 - val_accuracy: 0.7075\n",
+       "Epoch 6/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 29us/sample - loss: 0.5660 - accuracy: 0.7008 - val_loss: 5.7277 - val_accuracy: 0.7580\n",
+       "Epoch 7/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 28us/sample - loss: 0.3997 - accuracy: 0.8336 - val_loss: 4.3641 - val_accuracy: 0.8550\n",
+       "Epoch 8/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 29us/sample - loss: 0.1771 - accuracy: 0.8958 - val_loss: 1.5009 - val_accuracy: 0.9605\n",
+       "Epoch 9/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 29us/sample - loss: 0.2710 - accuracy: 0.9566 - val_loss: 3.2648 - val_accuracy: 0.9005\n",
+       "Epoch 10/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 29us/sample - loss: 0.2574 - accuracy: 0.9620 - val_loss: 1.0385 - val_accuracy: 0.9790\n",
+       "Epoch 11/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 29us/sample - loss: 0.0356 - accuracy: 0.9845 - val_loss: 0.1081 - val_accuracy: 1.0000\n",
+       "Epoch 12/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 4s 29us/sample - loss: 0.0029 - accuracy: 1.0000 - val_loss: 0.0261 - val_accuracy: 1.0000\n",
+       "Epoch 13/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 29us/sample - loss: 0.0019 - accuracy: 1.0000 - val_loss: 0.0144 - val_accuracy: 1.0000\n",
+       "Epoch 14/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 28us/sample - loss: 8.1710e-04 - accuracy: 1.0000 - val_loss: 0.0101 - val_accuracy: 1.0000\n",
+       "Epoch 15/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 29us/sample - loss: 5.8225e-04 - accuracy: 1.0000 - val_loss: 0.0079 - val_accuracy: 1.0000\n",
+       "Epoch 16/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 29us/sample - loss: 5.8369e-04 - accuracy: 1.0000 - val_loss: 0.0064 - val_accuracy: 1.0000\n",
+       "Epoch 17/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 4s 30us/sample - loss: 3.8744e-04 - accuracy: 1.0000 - val_loss: 0.0054 - val_accuracy: 1.0000\n",
+       "Epoch 18/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 4s 29us/sample - loss: 4.2988e-04 - accuracy: 1.0000 - val_loss: 0.0047 - val_accuracy: 1.0000\n",
+       "Epoch 19/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 4s 29us/sample - loss: 2.7449e-04 - accuracy: 1.0000 - val_loss: 0.0041 - val_accuracy: 1.0000\n",
+       "Epoch 20/20\n",
+       "313/313 [========================================================================================================================================================================================================================================================================================================================================================================] - 3s 29us/sample - loss: 2.9469e-04 - accuracy: 1.0000 - val_loss: 0.0037 - val_accuracy: 1.0000\n"
+      ]
+     }
+    ],
+    "source": [
+     "np.random.seed(42)\n",
+     "tf.random.set_seed(42)\n",
+     "\n",
+     "embedding_size = 5\n",
+     "\n",
+     "model = keras.models.Sequential([\n",
+     "    keras.layers.InputLayer(input_shape=[None], dtype=tf.int32, ragged=True),\n",
+     "    keras.layers.Embedding(input_dim=len(POSSIBLE_CHARS), output_dim=embedding_size),\n",
+     "    keras.layers.GRU(30),\n",
+     "    keras.layers.Dense(1, activation=\"sigmoid\")\n",
+     "])\n",
+     "optimizer = keras.optimizers.SGD(learning_rate=0.02, momentum = 0.95, nesterov=True)\n",
+     "model.compile(loss=\"binary_crossentropy\", optimizer=optimizer, metrics=[\"accuracy\"])\n",
+     "history = model.fit(X_train, y_train, epochs=20, validation_data=(X_valid, y_valid))"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "Now let's test our RNN on two tricky strings: the first one is bad while the second one is good. They only differ by the second to last character. If the RNN gets this right, it shows that it managed to notice the pattern that the second letter should always be equal to the second to last letter. That requires a fairly long short-term memory (which is the reason why we used a GRU cell)."
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 90,
+    "metadata": {},
+    "outputs": [
+     {
+      "name": "stdout",
+      "output_type": "stream",
+      "text": [
+       "\n",
+       "Estimated probability that these are Reber strings:\n",
+       "BPBTSSSSSSSXXTTVPXVPXTTTTTVVETE: 0.40%\n",
+       "BPBTSSSSSSSXXTTVPXVPXTTTTTVVEPE: 99.96%\n"
+      ]
+     }
+    ],
+    "source": [
+     "test_strings = [\"BPBTSSSSSSSXXTTVPXVPXTTTTTVVETE\",\n",
+     "                \"BPBTSSSSSSSXXTTVPXVPXTTTTTVVEPE\"]\n",
+     "X_test = tf.ragged.constant([string_to_ids(s) for s in test_strings], ragged_rank=1)\n",
+     "\n",
+     "y_proba = model.predict(X_test)\n",
+     "print()\n",
+     "print(\"Estimated probability that these are Reber strings:\")\n",
+     "for index, string in enumerate(test_strings):\n",
+     "    print(\"{}: {:.2f}%\".format(string, 100 * y_proba[index][0]))"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "Ta-da! It worked fine. The RNN found the correct answers with very high confidence. :)"
+    ]
+   }
+ ]

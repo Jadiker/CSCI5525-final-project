@@ -1,0 +1,173 @@
+[
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "## 9. Stacking Ensemble"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "Exercise: _Run the individual classifiers from the previous exercise to make predictions on the validation set, and create a new training set with the resulting predictions: each training instance is a vector containing the set of predictions from all your classifiers for an image, and the target is the image's class. Train a classifier on this new training set._"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 76,
+    "metadata": {},
+    "outputs": [],
+    "source": [
+     "X_val_predictions = np.empty((len(X_val), len(estimators)), dtype=np.float32)\n",
+     "\n",
+     "for index, estimator in enumerate(estimators):\n",
+     "    X_val_predictions[:, index] = estimator.predict(X_val)"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 77,
+    "metadata": {},
+    "outputs": [
+     {
+      "data": {
+       "text/plain": [
+        "array([[5., 5., 5., 5.],\n",
+        "       [8., 8., 8., 8.],\n",
+        "       [2., 2., 3., 2.],\n",
+        "       ...,\n",
+        "       [7., 7., 7., 7.],\n",
+        "       [6., 6., 6., 6.],\n",
+        "       [7., 7., 7., 7.]], dtype=float32)"
+       ]
+      },
+      "execution_count": 77,
+      "metadata": {},
+      "output_type": "execute_result"
+     }
+    ],
+    "source": [
+     "X_val_predictions"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 78,
+    "metadata": {},
+    "outputs": [
+     {
+      "data": {
+       "text/plain": [
+        "RandomForestClassifier(n_estimators=200, oob_score=True, random_state=42)"
+       ]
+      },
+      "execution_count": 78,
+      "metadata": {},
+      "output_type": "execute_result"
+     }
+    ],
+    "source": [
+     "rnd_forest_blender = RandomForestClassifier(n_estimators=200, oob_score=True, random_state=42)\n",
+     "rnd_forest_blender.fit(X_val_predictions, y_val)"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 79,
+    "metadata": {},
+    "outputs": [
+     {
+      "data": {
+       "text/plain": [
+        "0.9689"
+       ]
+      },
+      "execution_count": 79,
+      "metadata": {},
+      "output_type": "execute_result"
+     }
+    ],
+    "source": [
+     "rnd_forest_blender.oob_score_"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "You could fine-tune this blender or try other types of blenders (e.g., an `MLPClassifier`), then select the best one using cross-validation, as always."
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "Exercise: _Congratulations, you have just trained a blender, and together with the classifiers they form a stacking ensemble! Now let's evaluate the ensemble on the test set. For each image in the test set, make predictions with all your classifiers, then feed the predictions to the blender to get the ensemble's predictions. How does it compare to the voting classifier you trained earlier?_"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 80,
+    "metadata": {},
+    "outputs": [],
+    "source": [
+     "X_test_predictions = np.empty((len(X_test), len(estimators)), dtype=np.float32)\n",
+     "\n",
+     "for index, estimator in enumerate(estimators):\n",
+     "    X_test_predictions[:, index] = estimator.predict(X_test)"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 81,
+    "metadata": {},
+    "outputs": [],
+    "source": [
+     "y_pred = rnd_forest_blender.predict(X_test_predictions)"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 82,
+    "metadata": {},
+    "outputs": [],
+    "source": [
+     "from sklearn.metrics import accuracy_score"
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": 83,
+    "metadata": {},
+    "outputs": [
+     {
+      "data": {
+       "text/plain": [
+        "0.9683"
+       ]
+      },
+      "execution_count": 83,
+      "metadata": {},
+      "output_type": "execute_result"
+     }
+    ],
+    "source": [
+     "accuracy_score(y_test, y_pred)"
+    ]
+   },
+   {
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+     "This stacking ensemble does not perform as well as the voting classifier we trained earlier, it's not quite as good as the best individual classifier."
+    ]
+   },
+   {
+    "cell_type": "code",
+    "execution_count": null,
+    "metadata": {},
+    "outputs": [],
+    "source": []
+   }
+  ]

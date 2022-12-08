@@ -1,0 +1,112 @@
+ def shift_image(image, direction):
+
+"""
+
+:param image: The original MNIST image.
+
+:param direction: The direction to shift the image in.
+
+:return: A shifted copy of the original image.
+
+"""
+
+shifted_image = np.copy(image)
+
+shifted_image[:, :, direction] = image[:, :, -direction]
+
+return shifted_image
+
+X_train_shifted = X_train[:, :, :]
+X_test_shifted = X_test[:, :, :]
+X_train_shifted_four = np.empty((X_train_shifted.shape[0], 4), dtype=np.float32)
+X_test_shifted_four = np.empty((X_test_shifted.shape[0], 4), dtype=np.float32)
+for direction in [0, 1, 2, 3]:
+    X_train_shifted_four[:, :, direction] = shift_image(X_train_shifted, direction)
+    X_test_shifted_four[:, :, direction] = shift_image(X_test_shifted, direction)
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /= 255
+
+X_train_shifted_four /= 255
+X_test_shifted_four /=

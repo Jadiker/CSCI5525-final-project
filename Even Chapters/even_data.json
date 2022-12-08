@@ -1,0 +1,123 @@
+[{
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"],
+		["os", "os"],
+		["matplotlib.pyplot", "plt"]
+	],
+	"dataset description": "Housing data https://raw.githubusercontent.com/ageron/handson-ml2/master/",
+	"question": "Try a Support Vector Machine regressor (sklearn.svm.SVR), with various hyperparameters such as kernel=\"linear\" (with various values for the C hyperparameter) or kernel=\"rbf\" (with various values for the C and gamma hyperparameters). Don\u2019t worry about what these hyperparameters mean for now. How does the best SVR predictor perform?",
+	"code": "sol2.1.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "the usual Iris dataset",
+	"question": "Implement Batch Gradient Descent with early stopping for Softmax Regression\n(without using Scikit-Learn).",
+	"code": "sol4.12.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "moons dataset",
+	"question": "Train and fine-tune a Decision Tree for the moons dataset.\na. Generate a moons dataset using make_moons(n_samples=10000, noise=0.4).\nb. Split it into a training set and a test set using train_test_split().\nc. Use grid search with cross-validation (with the help of the GridSearchCV\nclass) to find good hyperparameter values for a DecisionTreeClassifier.\nHint: try various values for max_leaf_nodes.\nd. Train it on the full training set using these hyperparameters, and measure\nyour model\u2019s performance on the test set. You should get roughly 85% to 87% accuracy.",
+	"code": "sol6.7.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "moons dataset",
+	"question": "Grow a forest.\na. Continuing the previous exercise, generate 1,000 subsets of the training set, each containing 100 instances selected randomly. Hint: you can use Scikit-Learn\u2019s ShuffleSplit class for this.\nb. Train one Decision Tree on each subset, using the best hyperparameter values found above. Evaluate these 1,000 Decision Trees on the test set. Since they were trained on smaller sets, these Decision Trees will likely perform worse than the first Decision Tree, achieving only about 80% accuracy.\nc. Now comes the magic. For each test set instance, generate the predictions of the 1,000 Decision Trees, and keep only the most frequent prediction (you can use SciPy\u2019s mode() function for this). This gives you majority-vote predictions over the test set.\nd. Evaluate these predictions on the test set: you should obtain a slightly higher accuracy than your first model (about 0.5 to 1.5% higher). Congratulations, you have trained a Random Forest classifier!",
+	"code": "sol6.8.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "MNIST",
+	"question": "Load the MNIST dataset (introduced in Chapter 3) and split it into a training set and a test set (take the first 60,000 instances for training, and the remaining 10,000 for testing). Train a Random Forest classifier on the dataset and time how long it takes, then evaluate the resulting model on the test set. Next, use PCA to reduce the dataset\u2019s dimensionality, with an explained variance ratio of 95%. Train a new Random Forest classifier on the reduced dataset and see how long it takes. Was training much faster? Next evaluate the classifier on the test set: how does it compare to the previous classifier?",
+	"code": "sol8.9.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "MNIST",
+	"question": "Use t-SNE to reduce the MNIST dataset down to two dimensions and plot the result using Matplotlib. You can use a scatterplot using 10 different colors to represent each image\u2019s target class. Alternatively, you can write colored digits at the location of each instance, or even plot scaled-down versions of the digit images themselves (if you plot all digits, the visualization will be too cluttered, so you should either draw a random sample or plot an instance only if no other instance has already been plotted at a close distance). You should get a nice visualization with well-separated clusters of digits. Try using other dimensionality reduction algorithms such as PCA, LLE, or MDS and compare the resulting visualizations.",
+	"code": "sol8.10.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "MNIST",
+	"question": "Train a deep MLP on the MNIST dataset and see if you can get over 98% precision. Try adding all the bells and whistles (i.e., save checkpoints, use early stopping, plot learning curves using TensorBoard, and so on).",
+	"code": "sol10.10.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "california_housing  from sklearn.datasets import fetch_california_housing",
+	"question": "Implement a custom layer that performs Layer Normalization:\na. The build() method should define two trainable weights \u03b1 and \u03b2, both of shape input_shape[-1:] and data type tf.float32. \u03b1 should be initialized with 1s, and \u03b2 with 0s.\nb. The call() method should compute the mean \u03bc and standard deviation \u03c3 of each instance's features. For this, you can use tf.nn.moments(inputs, axes=-1, keepdims=True), which returns the mean \u03bc and the variance \u03c32 of all instances (compute the square root of the variance to get the standard deviation). Then the function should compute and return \u03b1\u2297(X - \u03bc)/(\u03c3 + \u03b5) + \u03b2, where \u2297 represents itemwise multiplication (*) and \u03b5 is a smoothing term (small constant to avoid division by zero, e.g., 0.001).\nc. Ensure that your custom layer produces the same (or very nearly the same) output as the keras.layers.LayerNormalization layer.",
+	"code": "sol12.12.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "Fashion MNIST",
+	"question": "Train a model using a custom training loop to tackle the Fashion MNIST dataset.\na. Display the epoch, iteration, mean training loss, and mean accuracy over each epoch (updated at each iteration), as well as the validation loss and accuracy at the end of each epoch.\nb. Try using a different optimizer with a different learning rate for the upper layers and the lower layers.",
+	"code": "sol12.13.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "MNIST",
+	"question": "Build your own CNN from scratch and try to achieve the highest possible accuracy on MNIST.",
+	"code": "sol14.9.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "generated dataset",
+	"question": "Embedded Reber grammars were used by Hochreiter and Schmidhuber in their paper about LSTMs. They are artificial grammars that produce strings such as \"BPBTSXXVPSEPE.\" Check out Jenny Orr's nice introduction to this topic. Choose a particular embedded Reber grammar (such as the one represented on Jenny Orr's page), then train an RNN to identify whether a string respects that grammar or not. You will first need to write a function capable of generating a training batch containing about 50% strings that respect the grammar, and 50% that don't.",
+	"code": "sol16.8.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "generated dataset",
+	"question": "Train an Encoder\u2013Decoder model that can convert a date string from one format to another (e.g., from \"April 22, 2019\" to \"2019-04-22\").",
+	"code": "sol16.9.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "openai-gpt",
+	"question": "Use one of the recent language models (e.g., GPT) to generate more convincing Shakespearean text.",
+	"code": "sol16.11.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "OpenAI LunarLander-v2 environment",
+	"question": "Use policy gradients to solve OpenAI Gym's LunarLander-v2 environment. You will need to install the Box2D dependencies (%pip install -U gym[box2d]).",
+	"code": "sol18.8.json"
+}, {
+	"packages": [
+		["numpy", "np"],
+		["scikit-learn", "sklearn"]
+	],
+	"dataset description": "TF-Agents",
+	"question": "Use TF-Agents to train an agent that can achieve a superhuman level at SpaceInvaders-v4 using any of the available algorithms.",
+	"code": "sol18.9.json"
+}]

@@ -1,0 +1,787 @@
+[
+{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 10. Bach Chorales\n",
+    "_Exercise: Download the [Bach chorales](https://homl.info/bach) dataset and unzip it. It is composed of 382 chorales composed by Johann Sebastian Bach. Each chorale is 100 to 640 time steps long, and each time step contains 4 integers, where each integer corresponds to a note's index on a piano (except for the value 0, which means that no note is played). Train a model—recurrent, convolutional, or both—that can predict the next time step (four notes), given a sequence of time steps from a chorale. Then use this model to generate Bach-like music, one note at a time: you can do this by giving the model the start of a chorale and asking it to predict the next time step, then appending these time steps to the input sequence and asking the model for the next note, and so on. Also make sure to check out [Google's Coconet model](https://homl.info/coconet), which was used for a nice [Google doodle about Bach](https://www.google.com/doodles/celebrating-johann-sebastian-bach)._\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 82,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "DOWNLOAD_ROOT = \"https://github.com/ageron/handson-ml2/raw/master/datasets/jsb_chorales/\"\n",
+    "FILENAME = \"jsb_chorales.tgz\"\n",
+    "filepath = keras.utils.get_file(FILENAME,\n",
+    "                                DOWNLOAD_ROOT + FILENAME,\n",
+    "                                cache_subdir=\"datasets/jsb_chorales\",\n",
+    "                                extract=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 83,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "jsb_chorales_dir = Path(filepath).parent\n",
+    "train_files = sorted(jsb_chorales_dir.glob(\"train/chorale_*.csv\"))\n",
+    "valid_files = sorted(jsb_chorales_dir.glob(\"valid/chorale_*.csv\"))\n",
+    "test_files = sorted(jsb_chorales_dir.glob(\"test/chorale_*.csv\"))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 84,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "\n",
+    "def load_chorales(filepaths):\n",
+    "    return [pd.read_csv(filepath).values.tolist() for filepath in filepaths]\n",
+    "\n",
+    "train_chorales = load_chorales(train_files)\n",
+    "valid_chorales = load_chorales(valid_files)\n",
+    "test_chorales = load_chorales(test_files)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 85,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[[74, 70, 65, 58],\n",
+       " [74, 70, 65, 58],\n",
+       " [74, 70, 65, 58],\n",
+       " [74, 70, 65, 58],\n",
+       " [75, 70, 58, 55],\n",
+       " [75, 70, 58, 55],\n",
+       " [75, 70, 60, 55],\n",
+       " [75, 70, 60, 55],\n",
+       " [77, 69, 62, 50],\n",
+       " [77, 69, 62, 50],\n",
+       " [77, 69, 62, 50],\n",
+       " [77, 69, 62, 50],\n",
+       " [77, 70, 62, 55],\n",
+       " [77, 70, 62, 55],\n",
+       " [77, 69, 62, 55],\n",
+       " [77, 69, 62, 55],\n",
+       " [75, 67, 63, 48],\n",
+       " [75, 67, 63, 48],\n",
+       " [75, 69, 63, 48],\n",
+       " [75, 69, 63, 48],\n",
+       " [74, 70, 65, 46],\n",
+       " [74, 70, 65, 46],\n",
+       " [74, 70, 65, 46],\n",
+       " [74, 70, 65, 46],\n",
+       " [72, 69, 65, 53],\n",
+       " [72, 69, 65, 53],\n",
+       " [72, 69, 65, 53],\n",
+       " [72, 69, 65, 53],\n",
+       " [72, 69, 65, 53],\n",
+       " [72, 69, 65, 53],\n",
+       " [72, 69, 65, 53],\n",
+       " [72, 69, 65, 53],\n",
+       " [74, 70, 65, 46],\n",
+       " [74, 70, 65, 46],\n",
+       " [74, 70, 65, 46],\n",
+       " [74, 70, 65, 46],\n",
+       " [75, 69, 63, 48],\n",
+       " [75, 69, 63, 48],\n",
+       " [75, 67, 63, 48],\n",
+       " [75, 67, 63, 48],\n",
+       " [77, 65, 62, 50],\n",
+       " [77, 65, 62, 50],\n",
+       " [77, 65, 60, 50],\n",
+       " [77, 65, 60, 50],\n",
+       " [74, 67, 58, 55],\n",
+       " [74, 67, 58, 55],\n",
+       " [74, 67, 58, 53],\n",
+       " [74, 67, 58, 53],\n",
+       " [72, 67, 58, 51],\n",
+       " [72, 67, 58, 51],\n",
+       " [72, 67, 58, 51],\n",
+       " [72, 67, 58, 51],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [72, 69, 65, 53],\n",
+       " [72, 69, 65, 53],\n",
+       " [72, 69, 65, 53],\n",
+       " [72, 69, 65, 53],\n",
+       " [74, 71, 53, 50],\n",
+       " [74, 71, 53, 50],\n",
+       " [74, 71, 53, 50],\n",
+       " [74, 71, 53, 50],\n",
+       " [75, 72, 55, 48],\n",
+       " [75, 72, 55, 48],\n",
+       " [75, 72, 55, 50],\n",
+       " [75, 72, 55, 50],\n",
+       " [75, 67, 60, 51],\n",
+       " [75, 67, 60, 51],\n",
+       " [75, 67, 60, 53],\n",
+       " [75, 67, 60, 53],\n",
+       " [74, 67, 60, 55],\n",
+       " [74, 67, 60, 55],\n",
+       " [74, 67, 57, 55],\n",
+       " [74, 67, 57, 55],\n",
+       " [74, 65, 59, 43],\n",
+       " [74, 65, 59, 43],\n",
+       " [72, 63, 59, 43],\n",
+       " [72, 63, 59, 43],\n",
+       " [72, 63, 55, 48],\n",
+       " [72, 63, 55, 48],\n",
+       " [72, 63, 55, 48],\n",
+       " [72, 63, 55, 48],\n",
+       " [72, 63, 55, 48],\n",
+       " [72, 63, 55, 48],\n",
+       " [72, 63, 55, 48],\n",
+       " [72, 63, 55, 48],\n",
+       " [75, 67, 60, 60],\n",
+       " [75, 67, 60, 60],\n",
+       " [75, 67, 60, 60],\n",
+       " [75, 67, 60, 60],\n",
+       " [77, 70, 62, 58],\n",
+       " [77, 70, 62, 58],\n",
+       " [77, 70, 62, 56],\n",
+       " [77, 70, 62, 56],\n",
+       " [79, 70, 62, 55],\n",
+       " [79, 70, 62, 55],\n",
+       " [79, 70, 62, 53],\n",
+       " [79, 70, 62, 53],\n",
+       " [79, 70, 63, 51],\n",
+       " [79, 70, 63, 51],\n",
+       " [79, 70, 63, 51],\n",
+       " [79, 70, 63, 51],\n",
+       " [77, 70, 63, 58],\n",
+       " [77, 70, 63, 58],\n",
+       " [77, 70, 60, 58],\n",
+       " [77, 70, 60, 58],\n",
+       " [77, 70, 62, 46],\n",
+       " [77, 70, 62, 46],\n",
+       " [77, 68, 62, 46],\n",
+       " [75, 68, 62, 46],\n",
+       " [75, 67, 58, 51],\n",
+       " [75, 67, 58, 51],\n",
+       " [75, 67, 58, 51],\n",
+       " [75, 67, 58, 51],\n",
+       " [75, 67, 58, 51],\n",
+       " [75, 67, 58, 51],\n",
+       " [75, 67, 58, 51],\n",
+       " [75, 67, 58, 51],\n",
+       " [74, 67, 58, 55],\n",
+       " [74, 67, 58, 55],\n",
+       " [74, 67, 58, 55],\n",
+       " [74, 67, 58, 55],\n",
+       " [75, 67, 58, 53],\n",
+       " [75, 67, 58, 53],\n",
+       " [75, 67, 58, 51],\n",
+       " [75, 67, 58, 51],\n",
+       " [77, 65, 58, 50],\n",
+       " [77, 65, 58, 50],\n",
+       " [77, 65, 56, 50],\n",
+       " [77, 65, 56, 50],\n",
+       " [70, 63, 55, 51],\n",
+       " [70, 63, 55, 51],\n",
+       " [70, 63, 55, 51],\n",
+       " [70, 63, 55, 51],\n",
+       " [75, 65, 60, 45],\n",
+       " [75, 65, 60, 45],\n",
+       " [75, 65, 60, 45],\n",
+       " [75, 65, 60, 45],\n",
+       " [74, 65, 58, 46],\n",
+       " [74, 65, 58, 46],\n",
+       " [74, 65, 58, 46],\n",
+       " [74, 65, 58, 46],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [74, 65, 58, 58],\n",
+       " [74, 65, 58, 58],\n",
+       " [74, 65, 58, 58],\n",
+       " [74, 65, 58, 58],\n",
+       " [75, 67, 58, 57],\n",
+       " [75, 67, 58, 57],\n",
+       " [75, 67, 58, 55],\n",
+       " [75, 67, 58, 55],\n",
+       " [77, 65, 60, 57],\n",
+       " [77, 65, 60, 57],\n",
+       " [77, 65, 60, 53],\n",
+       " [77, 65, 60, 53],\n",
+       " [74, 65, 58, 58],\n",
+       " [74, 65, 58, 58],\n",
+       " [74, 65, 58, 58],\n",
+       " [74, 65, 58, 58],\n",
+       " [72, 67, 58, 51],\n",
+       " [72, 67, 58, 51],\n",
+       " [72, 67, 58, 51],\n",
+       " [72, 67, 58, 51],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [72, 65, 57, 53],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46],\n",
+       " [70, 65, 62, 46]]"
+      ]
+     },
+     "execution_count": 85,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "train_chorales[0]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Notes range from 36 (C1 = C on octave 1) to 81 (A5 = A on octave 5), plus 0 for silence:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 86,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "notes = set()\n",
+    "for chorales in (train_chorales, valid_chorales, test_chorales):\n",
+    "    for chorale in chorales:\n",
+    "        for chord in chorale:\n",
+    "            notes |= set(chord)\n",
+    "\n",
+    "n_notes = len(notes)\n",
+    "min_note = min(notes - {0})\n",
+    "max_note = max(notes)\n",
+    "\n",
+    "assert min_note == 36\n",
+    "assert max_note == 81"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Let's write a few functions to listen to these chorales (you don't need to understand the details here, and in fact there are certainly simpler ways to do this, for example using MIDI players, but I just wanted to have a bit of fun writing a synthesizer):"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 87,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from IPython.display import Audio\n",
+    "\n",
+    "def notes_to_frequencies(notes):\n",
+    "    # Frequency doubles when you go up one octave; there are 12 semi-tones\n",
+    "    # per octave; Note A on octave 4 is 440 Hz, and it is note number 69.\n",
+    "    return 2 ** ((np.array(notes) - 69) / 12) * 440\n",
+    "\n",
+    "def frequencies_to_samples(frequencies, tempo, sample_rate):\n",
+    "    note_duration = 60 / tempo # the tempo is measured in beats per minutes\n",
+    "    # To reduce click sound at every beat, we round the frequencies to try to\n",
+    "    # get the samples close to zero at the end of each note.\n",
+    "    frequencies = np.round(note_duration * frequencies) / note_duration\n",
+    "    n_samples = int(note_duration * sample_rate)\n",
+    "    time = np.linspace(0, note_duration, n_samples)\n",
+    "    sine_waves = np.sin(2 * np.pi * frequencies.reshape(-1, 1) * time)\n",
+    "    # Removing all notes with frequencies ≤ 9 Hz (includes note 0 = silence)\n",
+    "    sine_waves *= (frequencies > 9.).reshape(-1, 1)\n",
+    "    return sine_waves.reshape(-1)\n",
+    "\n",
+    "def chords_to_samples(chords, tempo, sample_rate):\n",
+    "    freqs = notes_to_frequencies(chords)\n",
+    "    freqs = np.r_[freqs, freqs[-1:]] # make last note a bit longer\n",
+    "    merged = np.mean([frequencies_to_samples(melody, tempo, sample_rate)\n",
+    "                     for melody in freqs.T], axis=0)\n",
+    "    n_fade_out_samples = sample_rate * 60 // tempo # fade out last note\n",
+    "    fade_out = np.linspace(1., 0., n_fade_out_samples)**2\n",
+    "    merged[-n_fade_out_samples:] *= fade_out\n",
+    "    return merged\n",
+    "\n",
+    "def play_chords(chords, tempo=160, amplitude=0.1, sample_rate=44100, filepath=None):\n",
+    "    samples = amplitude * chords_to_samples(chords, tempo, sample_rate)\n",
+    "    if filepath:\n",
+    "        from scipy.io import wavfile\n",
+    "        samples = (2**15 * samples).astype(np.int16)\n",
+    "        wavfile.write(filepath, sample_rate, samples)\n",
+    "        return display(Audio(filepath))\n",
+    "    else:\n",
+    "        return display(Audio(samples, rate=sample_rate))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now let's listen to a few chorales:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 88,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "for index in range(3):\n",
+    "    play_chords(train_chorales[index])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Divine! :)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In order to be able to generate new chorales, we want to train a model that can predict the next chord given all the previous chords. If we naively try to predict the next chord in one shot, predicting all 4 notes at once, we run the risk of getting notes that don't go very well together (believe me, I tried). It's much better and simpler to predict one note at a time. So we will need to preprocess every chorale, turning each chord into an arpegio (i.e., a sequence of notes rather than notes played simultaneuously). So each chorale will be a long sequence of notes (rather than chords), and we can just train a model that can predict the next note given all the previous notes. We will use a sequence-to-sequence approach, where we feed a window to the neural net, and it tries to predict that same window shifted one time step into the future.\n",
+    "\n",
+    "We will also shift the values so that they range from 0 to 46, where 0 represents silence, and values 1 to 46 represent notes 36 (C1) to 81 (A5).\n",
+    "\n",
+    "And we will train the model on windows of 128 notes (i.e., 32 chords).\n",
+    "\n",
+    "Since the dataset fits in memory, we could preprocess the chorales in RAM using any Python code we like, but I will demonstrate here how to do all the preprocessing using tf.data (there will be more details about creating windows using tf.data in the next chapter)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 89,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def create_target(batch):\n",
+    "    X = batch[:, :-1]\n",
+    "    Y = batch[:, 1:] # predict next note in each arpegio, at each step\n",
+    "    return X, Y\n",
+    "\n",
+    "def preprocess(window):\n",
+    "    window = tf.where(window == 0, window, window - min_note + 1) # shift values\n",
+    "    return tf.reshape(window, [-1]) # convert to arpegio\n",
+    "\n",
+    "def bach_dataset(chorales, batch_size=32, shuffle_buffer_size=None,\n",
+    "                 window_size=32, window_shift=16, cache=True):\n",
+    "    def batch_window(window):\n",
+    "        return window.batch(window_size + 1)\n",
+    "\n",
+    "    def to_windows(chorale):\n",
+    "        dataset = tf.data.Dataset.from_tensor_slices(chorale)\n",
+    "        dataset = dataset.window(window_size + 1, window_shift, drop_remainder=True)\n",
+    "        return dataset.flat_map(batch_window)\n",
+    "\n",
+    "    chorales = tf.ragged.constant(chorales, ragged_rank=1)\n",
+    "    dataset = tf.data.Dataset.from_tensor_slices(chorales)\n",
+    "    dataset = dataset.flat_map(to_windows).map(preprocess)\n",
+    "    if cache:\n",
+    "        dataset = dataset.cache()\n",
+    "    if shuffle_buffer_size:\n",
+    "        dataset = dataset.shuffle(shuffle_buffer_size)\n",
+    "    dataset = dataset.batch(batch_size)\n",
+    "    dataset = dataset.map(create_target)\n",
+    "    return dataset.prefetch(1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now let's create the training set, the validation set and the test set:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 90,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train_set = bach_dataset(train_chorales, shuffle_buffer_size=1000)\n",
+    "valid_set = bach_dataset(valid_chorales)\n",
+    "test_set = bach_dataset(test_chorales)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now let's create the model:\n",
+    "\n",
+    "* We could feed the note values directly to the model, as floats, but this would probably not give good results. Indeed, the relationships between notes are not that simple: for example, if you replace a C3 with a C4, the melody will still sound fine, even though these notes are 12 semi-tones apart (i.e., one octave). Conversely, if you replace a C3 with a C\\#3, it's very likely that the chord will sound horrible, despite these notes being just next to each other. So we will use an `Embedding` layer to convert each note to a small vector representation (see Chapter 16 for more details on embeddings). We will use 5-dimensional embeddings, so the output of this first layer will have a shape of `[batch_size, window_size, 5]`.\n",
+    "* We will then feed this data to a small WaveNet-like neural network, composed of a stack of 4 `Conv1D` layers with doubling dilation rates. We will intersperse these layers with `BatchNormalization` layers for faster better convergence.\n",
+    "* Then one `LSTM` layer to try to capture long-term patterns.\n",
+    "* And finally a `Dense` layer to produce the final note probabilities. It will predict one probability for each chorale in the batch, for each time step, and for each possible note (including silence). So the output shape will be `[batch_size, window_size, 47]`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 91,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Model: \"sequential\"\n",
+      "_________________________________________________________________\n",
+      "Layer (type)                 Output Shape              Param #   \n",
+      "=================================================================\n",
+      "embedding (Embedding)        (None, None, 5)           235       \n",
+      "_________________________________________________________________\n",
+      "conv1d (Conv1D)              (None, None, 32)          352       \n",
+      "_________________________________________________________________\n",
+      "batch_normalization (BatchNo (None, None, 32)          128       \n",
+      "_________________________________________________________________\n",
+      "conv1d_1 (Conv1D)            (None, None, 48)          3120      \n",
+      "_________________________________________________________________\n",
+      "batch_normalization_1 (Batch (None, None, 48)          192       \n",
+      "_________________________________________________________________\n",
+      "conv1d_2 (Conv1D)            (None, None, 64)          6208      \n",
+      "_________________________________________________________________\n",
+      "batch_normalization_2 (Batch (None, None, 64)          256       \n",
+      "_________________________________________________________________\n",
+      "conv1d_3 (Conv1D)            (None, None, 96)          12384     \n",
+      "_________________________________________________________________\n",
+      "batch_normalization_3 (Batch (None, None, 96)          384       \n",
+      "_________________________________________________________________\n",
+      "lstm (LSTM)                  (None, None, 256)         361472    \n",
+      "_________________________________________________________________\n",
+      "dense (Dense)                (None, None, 47)          12079     \n",
+      "=================================================================\n",
+      "Total params: 396,810\n",
+      "Trainable params: 396,330\n",
+      "Non-trainable params: 480\n",
+      "_________________________________________________________________\n"
+     ]
+    }
+   ],
+   "source": [
+    "n_embedding_dims = 5\n",
+    "\n",
+    "model = keras.models.Sequential([\n",
+    "    keras.layers.Embedding(input_dim=n_notes, output_dim=n_embedding_dims,\n",
+    "                           input_shape=[None]),\n",
+    "    keras.layers.Conv1D(32, kernel_size=2, padding=\"causal\", activation=\"relu\"),\n",
+    "    keras.layers.BatchNormalization(),\n",
+    "    keras.layers.Conv1D(48, kernel_size=2, padding=\"causal\", activation=\"relu\", dilation_rate=2),\n",
+    "    keras.layers.BatchNormalization(),\n",
+    "    keras.layers.Conv1D(64, kernel_size=2, padding=\"causal\", activation=\"relu\", dilation_rate=4),\n",
+    "    keras.layers.BatchNormalization(),\n",
+    "    keras.layers.Conv1D(96, kernel_size=2, padding=\"causal\", activation=\"relu\", dilation_rate=8),\n",
+    "    keras.layers.BatchNormalization(),\n",
+    "    keras.layers.LSTM(256, return_sequences=True),\n",
+    "    keras.layers.Dense(n_notes, activation=\"softmax\")\n",
+    "])\n",
+    "\n",
+    "model.summary()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now we're ready to compile and train the model!"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 92,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Epoch 1/20\n",
+      "98/98 [==============================] - 17s 171ms/step - loss: 1.8198 - accuracy: 0.5358 - val_loss: 3.7675 - val_accuracy: 0.0428\n",
+      "Epoch 2/20\n",
+      "98/98 [==============================] - 15s 152ms/step - loss: 0.8885 - accuracy: 0.7641 - val_loss: 4.1054 - val_accuracy: 0.0470\n",
+      "Epoch 3/20\n",
+      "98/98 [==============================] - 16s 165ms/step - loss: 0.7471 - accuracy: 0.7930 - val_loss: 3.8600 - val_accuracy: 0.0368\n",
+      "Epoch 4/20\n",
+      "98/98 [==============================] - 16s 165ms/step - loss: 0.6749 - accuracy: 0.8083 - val_loss: 3.0490 - val_accuracy: 0.2196\n",
+      "Epoch 5/20\n",
+      "98/98 [==============================] - 15s 157ms/step - loss: 0.6221 - accuracy: 0.8188 - val_loss: 1.7138 - val_accuracy: 0.5153\n",
+      "Epoch 6/20\n",
+      "98/98 [==============================] - 16s 163ms/step - loss: 0.5833 - accuracy: 0.8283 - val_loss: 1.9068 - val_accuracy: 0.4570\n",
+      "Epoch 7/20\n",
+      "98/98 [==============================] - 16s 165ms/step - loss: 0.5484 - accuracy: 0.8362 - val_loss: 0.7930 - val_accuracy: 0.7678\n",
+      "Epoch 8/20\n",
+      "98/98 [==============================] - 16s 159ms/step - loss: 0.5163 - accuracy: 0.8447 - val_loss: 0.6577 - val_accuracy: 0.8091\n",
+      "Epoch 9/20\n",
+      "98/98 [==============================] - 15s 158ms/step - loss: 0.4877 - accuracy: 0.8519 - val_loss: 0.6239 - val_accuracy: 0.8180\n",
+      "Epoch 10/20\n",
+      "98/98 [==============================] - 17s 171ms/step - loss: 0.4607 - accuracy: 0.8595 - val_loss: 0.6330 - val_accuracy: 0.8151\n",
+      "Epoch 11/20\n",
+      "98/98 [==============================] - 15s 156ms/step - loss: 0.4369 - accuracy: 0.8657 - val_loss: 0.6248 - val_accuracy: 0.8179\n",
+      "Epoch 12/20\n",
+      "98/98 [==============================] - 16s 167ms/step - loss: 0.4125 - accuracy: 0.8726 - val_loss: 0.6046 - val_accuracy: 0.8248\n",
+      "Epoch 13/20\n",
+      "98/98 [==============================] - 16s 162ms/step - loss: 0.3924 - accuracy: 0.8784 - val_loss: 0.6618 - val_accuracy: 0.8096\n",
+      "Epoch 14/20\n",
+      "98/98 [==============================] - 16s 159ms/step - loss: 0.3713 - accuracy: 0.8847 - val_loss: 0.6919 - val_accuracy: 0.8067\n",
+      "Epoch 15/20\n",
+      "98/98 [==============================] - 17s 176ms/step - loss: 0.3562 - accuracy: 0.8889 - val_loss: 0.6123 - val_accuracy: 0.8236\n",
+      "Epoch 16/20\n",
+      "98/98 [==============================] - 16s 165ms/step - loss: 0.3328 - accuracy: 0.8969 - val_loss: 0.6547 - val_accuracy: 0.8133\n",
+      "Epoch 17/20\n",
+      "98/98 [==============================] - 15s 156ms/step - loss: 0.3182 - accuracy: 0.9011 - val_loss: 0.6322 - val_accuracy: 0.8202\n",
+      "Epoch 18/20\n",
+      "98/98 [==============================] - 16s 167ms/step - loss: 0.3007 - accuracy: 0.9069 - val_loss: 0.6929 - val_accuracy: 0.8037\n",
+      "Epoch 19/20\n",
+      "98/98 [==============================] - 16s 168ms/step - loss: 0.2869 - accuracy: 0.9103 - val_loss: 0.6446 - val_accuracy: 0.8220\n",
+      "Epoch 20/20\n",
+      "98/98 [==============================] - 17s 173ms/step - loss: 0.2703 - accuracy: 0.9158 - val_loss: 0.6439 - val_accuracy: 0.8189\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<tensorflow.python.keras.callbacks.History at 0x7fee205ff490>"
+      ]
+     },
+     "execution_count": 92,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "optimizer = keras.optimizers.Nadam(learning_rate=1e-3)\n",
+    "model.compile(loss=\"sparse_categorical_crossentropy\", optimizer=optimizer,\n",
+    "              metrics=[\"accuracy\"])\n",
+    "model.fit(train_set, epochs=20, validation_data=valid_set)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "I have not done much hyperparameter search, so feel free to iterate on this model now and try to optimize it. For example, you could try removing the `LSTM` layer and replacing it with `Conv1D` layers. You could also play with the number of layers, the learning rate, the optimizer, and so on."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Once you're satisfied with the performance of the model on the validation set, you can save it and evaluate it one last time on the test set:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 93,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "     34/Unknown - 2s 66ms/step - loss: 0.6557 - accuracy: 0.8164"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[0.6556663916391485, 0.8164004]"
+      ]
+     },
+     "execution_count": 93,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "model.save(\"my_bach_model.h5\")\n",
+    "model.evaluate(test_set)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Note:** There's no real need for a test set in this exercise, since we will perform the final evaluation by just listening to the music produced by the model. So if you want, you can add the test set to the train set, and train the model again, hopefully getting a slightly better model."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now let's write a function that will generate a new chorale. We will give it a few seed chords, it will convert them to arpegios (the format expected by the model), and use the model to predict the next note, then the next, and so on. In the end, it will group the notes 4 by 4 to create chords again, and return the resulting chorale."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Warning**: `model.predict_classes(X)` is deprecated. It is replaced with `np.argmax(model.predict(X), axis=-1)`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 94,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def generate_chorale(model, seed_chords, length):\n",
+    "    arpegio = preprocess(tf.constant(seed_chords, dtype=tf.int64))\n",
+    "    arpegio = tf.reshape(arpegio, [1, -1])\n",
+    "    for chord in range(length):\n",
+    "        for note in range(4):\n",
+    "            #next_note = model.predict_classes(arpegio)[:1, -1:]\n",
+    "            next_note = np.argmax(model.predict(arpegio), axis=-1)[:1, -1:]\n",
+    "            arpegio = tf.concat([arpegio, next_note], axis=1)\n",
+    "    arpegio = tf.where(arpegio == 0, arpegio, arpegio + min_note - 1)\n",
+    "    return tf.reshape(arpegio, shape=[-1, 4])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "To test this function, we need some seed chords. Let's use the first 8 chords of one of the test chorales (it's actually just 2 different chords, each played 4 times):"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 95,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "seed_chords = test_chorales[2][:8]\n",
+    "play_chords(seed_chords, amplitude=0.2)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now we are ready to generate our first chorale! Let's ask the function to generate 56 more chords, for a total of 64 chords, i.e., 16 bars (assuming 4 chords per bar, i.e., a 4/4 signature):"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 96,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "new_chorale = generate_chorale(model, seed_chords, 56)\n",
+    "play_chords(new_chorale)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This approach has one major flaw: it is often too conservative. Indeed, the model will not take any risk, it will always choose the note with the highest score, and since repeating the previous note generally sounds good enough, it's the least risky option, so the algorithm will tend to make notes last longer and longer. Pretty boring. Plus, if you run the model multiple times, it will always generate the same melody.\n",
+    "\n",
+    "So let's spice things up a bit! Instead of always picking the note with the highest score, we will pick the next note randomly, according to the predicted probabilities. For example, if the model predicts a C3 with 75% probability, and a G3 with a 25% probability, then we will pick one of these two notes randomly, with these probabilities. We will also add a `temperature` parameter that will control how \"hot\" (i.e., daring) we want the system to feel. A high temperature will bring the predicted probabilities closer together, reducing the probability of the likely notes and increasing the probability of the unlikely ones."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 97,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def generate_chorale_v2(model, seed_chords, length, temperature=1):\n",
+    "    arpegio = preprocess(tf.constant(seed_chords, dtype=tf.int64))\n",
+    "    arpegio = tf.reshape(arpegio, [1, -1])\n",
+    "    for chord in range(length):\n",
+    "        for note in range(4):\n",
+    "            next_note_probas = model.predict(arpegio)[0, -1:]\n",
+    "            rescaled_logits = tf.math.log(next_note_probas) / temperature\n",
+    "            next_note = tf.random.categorical(rescaled_logits, num_samples=1)\n",
+    "            arpegio = tf.concat([arpegio, next_note], axis=1)\n",
+    "    arpegio = tf.where(arpegio == 0, arpegio, arpegio + min_note - 1)\n",
+    "    return tf.reshape(arpegio, shape=[-1, 4])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Let's generate 3 chorales using this new function: one cold, one medium, and one hot (feel free to experiment with other seeds, lengths and temperatures). The code saves each chorale to a separate file. You can run these cells over an over again until you generate a masterpiece!\n",
+    "\n",
+    "**Please share your most beautiful generated chorale with me on Twitter @aureliengeron, I would really appreciate it! :))**"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 98,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "new_chorale_v2_cold = generate_chorale_v2(model, seed_chords, 56, temperature=0.8)\n",
+    "play_chords(new_chorale_v2_cold, filepath=\"bach_cold.wav\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 99,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "new_chorale_v2_medium = generate_chorale_v2(model, seed_chords, 56, temperature=1.0)\n",
+    "play_chords(new_chorale_v2_medium, filepath=\"bach_medium.wav\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 100,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "new_chorale_v2_hot = generate_chorale_v2(model, seed_chords, 56, temperature=1.5)\n",
+    "play_chords(new_chorale_v2_hot, filepath=\"bach_hot.wav\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Lastly, you can try a fun social experiment: send your friends a few of your favorite generated chorales, plus the real chorale, and ask them to guess which one is the real one!"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 101,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "play_chords(test_chorales[2][:64], filepath=\"bach_test_4.wav\")"
+   ]
+  }
+ ]

@@ -1,0 +1,31 @@
+
+
+1. We need to import the necessary libraries for this task.
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import datasets, svm
+
+2. We need to load the dataset.
+
+housing_data = datasets.load_boston()
+
+3. We need to create a support vector machine regressor.
+
+svr = svm.SVR()
+
+4. We need to fit the regressor to the dataset.
+
+svr.fit(housing_data.data, housing_data.target)
+
+5. We need to make predictions using the regressor.
+
+predicted = svr.predict(housing_data.data)
+
+6. We need to calculate the mean squared error.
+
+mse = ((housing_data.target - predicted) ** 2).mean()
+
+7. We need to print the mean squared error.
+
+print(mse)

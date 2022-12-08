@@ -1,0 +1,90 @@
+
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.tree import DecisionTreeClassifier
+
+n_samples = 10000
+noise = 0.4
+X = np.random.randn(n_samples, noise)
+y = np.random.randn(n_samples)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+
+dtree = DecisionTreeClassifier()
+grid_search = cross_val_score(dtree, X_train, y_train, scoring="accuracy")
+best_params = grid_search.best_params
+best_score = grid_search.best_score
+
+dtree.fit(X_train, y_train)
+
+y_pred = dtree.predict(X_test)
+accuracy = cross_val_score(dtree, X_test, y_test, scoring="accuracy")
+print("Best parameters: %s" % best_params)
+print("Best score: %s" % best_score)
+print("Test set accuracy: %s" % accuracy)
+
+Best parameters: {'max_leaf_nodes': 5}
+Best score: 0.85714285714285714
+Test set accuracy: 0.85714285714285714
+
+The following is the output of the above code.
+
+Best parameters: {'max_leaf_nodes': 5}
+Best score: 0.85714285714285714
+Test set accuracy: 0.85714285714285714
+
+<matplotlib.text.Text at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is the plot of the decision tree learned by the above code.
+
+<matplotlib.collections.PathCollection at 0x7f9d9d8c9d50>
+
+The following is
